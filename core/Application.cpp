@@ -1766,10 +1766,23 @@ private:
     }
 };
 
+//
+//Input events from GLFW
+//
 /**********************************************************************/
-void onKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+static void onKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
-    app->onKey(window, key, scancode, action, mods);
+    app->getInputManager()->onKey(window, key, scancode, action, mods);
+}
+
+static void onCursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
+    Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
+    app->getInputManager()->onCursorPos(window, xpos, ypos);
+}
+
+static void onMouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+    Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
+    app->getInputManager()->onMouseButton(window, button, action, mods);
 }
 
 /**********************************************************************/
@@ -1779,27 +1792,37 @@ Application* Application::_instance = nullptr;
 Application::Application() {
     _internal = std::make_unique<InternalApplication>();
     _internal->init();
-
+    _inputManager = std::make_unique<InputManager>();
 }
 
 /**********************************************************************/
-Application* Application::create() {
-    if (_instance) {
-        return _instance;
+void Application::create() {
+    if (!_instance) {
+
+        _instance = new Application();
+
+        _instance->initialize();
     }
+}
 
-    _instance = new Application();
-
+/**********************************************************************/
+void Application::initialize() {
     // setup glut input
     glfwSetWindowUserPointer(_instance->getWindow(), _instance);
     glfwSetKeyCallback(_instance->getWindow(), onKeyCallback);
-    
-    return _instance;
+    glfwSetCursorPosCallback(_instance->getWindow(), onCursorPosCallback);
+    glfwSetMouseButtonCallback(_instance->getWindow(), onMouseButtonCallback);
+
+    _inputManager->cursorShowing(false);
 }
 
 /**********************************************************************/
-Application* Application::get() {
-    return _instance;
+Application& Application::get() {
+    return *_instance;
+}
+
+const std::unique_ptr<InputManager>& Application::getInputManager() const {
+    return _inputManager;
 }
 
 /**********************************************************************/
@@ -1815,10 +1838,4 @@ VkDevice Application::getDevice() const {
 /**********************************************************************/
 void Application::run() {
     _internal->run();
-}
-
-/**********************************************************************/
-void Application::onKey(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    LOGI("key down " << key << ", " << scancode << ", " << action << ", " << mods);
-
 }

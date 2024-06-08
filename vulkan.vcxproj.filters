@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Application.cpp">
+    <ClCompile Include="core\Application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="utilities\Log.cpp">
@@ -27,18 +27,30 @@
     <ClCompile Include="utilities\Assets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\InputManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ISystemManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="utilities\Log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Application.h">
+    <ClInclude Include="core\Application.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IVulkanApplication.h">
+    <ClInclude Include="core\IVulkanApplication.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="utilities\Assets.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\InputManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ISystemManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

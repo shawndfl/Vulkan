@@ -135,15 +135,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="core\InputManager.cpp" />
+    <ClCompile Include="ISystemManager.cpp" />
     <ClCompile Include="utilities\Assets.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="utilities\Log.cpp" />
-    <ClCompile Include="Application.cpp" />
+    <ClCompile Include="core\Application.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Application.h" />
+    <ClInclude Include="core\Application.h" />
+    <ClInclude Include="core\InputManager.h" />
+    <ClInclude Include="ISystemManager.h" />
     <ClInclude Include="utilities\Assets.h" />
-    <ClInclude Include="IVulkanApplication.h" />
+    <ClInclude Include="core\IVulkanApplication.h" />
     <ClInclude Include="utilities\Log.h" />
   </ItemGroup>
   <ItemGroup>

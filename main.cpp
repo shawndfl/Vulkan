@@ -1,7 +1,6 @@
-#include "Application.h"
+#include "core/Application.h"
 
 int main() {
-    Application* app = Application::create();
-    app->run();
-    delete app;
+    Application::create();
+    Application::get().run();
 }
