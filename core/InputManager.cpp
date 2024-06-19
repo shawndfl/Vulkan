@@ -10,7 +10,7 @@ InputManager::InputManager() {
 void InputManager::cursorShowing(bool show) {
 	_showingCursor = show;
 	const Application& app = Application::get();
-	glfwSetInputMode(app.getWindow(), GLFW_CURSOR, show ?GLFW_CURSOR_NORMAL: GLFW_CURSOR_HIDDEN);
+	glfwSetInputMode(Application::get().getWindow(), GLFW_CURSOR, show ?GLFW_CURSOR_NORMAL: GLFW_CURSOR_DISABLED);
 }
 
 /**********************************************************************/

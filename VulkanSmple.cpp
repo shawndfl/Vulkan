@@ -1,3 +1,4 @@
+#if 0
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
@@ -8,7 +9,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/hash.hpp>
 
+#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <tiny_obj_loader.h>
 
 #include <iostream>
 #include <fstream>
@@ -24,13 +29,6 @@
 #include <optional>
 #include <set>
 #include <unordered_map>
-
-#include "utilities/Log.h"
-#include "application.h"
-
-#include "scenes/GameScene.h"
-#include "utilities/Assets.h"
-
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -54,8 +52,7 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-
-VkResult CreateDebugUtilsMessengerEXT2(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
+VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
     auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
     if (func != nullptr) {
         return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
@@ -64,7 +61,8 @@ VkResult CreateDebugUtilsMessengerEXT2(VkInstance instance, const VkDebugUtilsMe
         return VK_ERROR_EXTENSION_NOT_PRESENT;
     }
 }
-void DestroyDebugUtilsMessengerEXT2(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
+
+void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
     auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
     if (func != nullptr) {
         func(instance, debugMessenger, pAllocator);
@@ -140,36 +138,13 @@ struct UniformBufferObject {
     alignas(16) glm::mat4 proj;
 };
 
-/**
-* Internal class that sets up the vulkan application
-*/
-class InternalApplication: public IVulkanApplication {
+class HelloTriangleApplication {
 public:
-
-    virtual void init() {
+    void run() {
         initWindow();
         initVulkan();
-    }
-
-    virtual void run() {
         mainLoop();
         cleanup();
-    }
-
-    virtual VkDevice getDevice() const {
-        return device;
-    }
-
-    virtual GLFWwindow* getWindow() const {
-        return window;
-    }
-
-    virtual VkRenderPass getStandardRenderPass() const {
-        return renderPass;
-    }
-
-    virtual VkPhysicalDevice getPhysicalDevice() const {
-        return physicalDevice;
     }
 
 private:
@@ -178,7 +153,7 @@ private:
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
     VkSurfaceKHR surface;
-    
+
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
     VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
     VkDevice device;
@@ -236,7 +211,7 @@ private:
     uint32_t currentFrame = 0;
 
     bool framebufferResized = false;
-public:
+
     void initWindow() {
         glfwInit();
 
@@ -248,7 +223,7 @@ public:
     }
 
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-        auto app = reinterpret_cast<InternalApplication*>(glfwGetWindowUserPointer(window));
+        auto app = reinterpret_cast<HelloTriangleApplication*>(glfwGetWindowUserPointer(window));
         app->framebufferResized = true;
     }
 
@@ -348,7 +323,7 @@ public:
         vkDestroyDevice(device, nullptr);
 
         if (enableValidationLayers) {
-            DestroyDebugUtilsMessengerEXT2(instance, debugMessenger, nullptr);
+            DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
         }
 
         vkDestroySurfaceKHR(instance, surface, nullptr);
@@ -432,7 +407,7 @@ public:
         VkDebugUtilsMessengerCreateInfoEXT createInfo;
         populateDebugMessengerCreateInfo(createInfo);
 
-        if (CreateDebugUtilsMessengerEXT2(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
+        if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
             throw std::runtime_error("failed to set up debug messenger!");
         }
     }
@@ -673,8 +648,8 @@ public:
     }
 
     void createGraphicsPipeline() {
-        auto vertShaderCode = Assets::readFile("./shaders/main.vert.spv");
-        auto fragShaderCode = Assets::readFile("./shaders/main.frag.spv");
+        auto vertShaderCode = readFile("./shaders/vert.spv");
+        auto fragShaderCode = readFile("./shaders/frag.spv");
 
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -721,7 +696,7 @@ public:
         rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
         rasterizer.lineWidth = 1.0f;
         rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-        rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+        rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         rasterizer.depthBiasEnable = VK_FALSE;
 
         VkPipelineMultisampleStateCreateInfo multisampling{};
@@ -1169,44 +1144,42 @@ public:
     }
 
     void loadModel() {
-       
+        tinyobj::attrib_t attrib;
+        std::vector<tinyobj::shape_t> shapes;
+        std::vector<tinyobj::material_t> materials;
+        std::string warn, err;
+
+        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH.c_str())) {
+            throw std::runtime_error(warn + err);
+        }
+
         std::unordered_map<Vertex, uint32_t> uniqueVertices{};
 
-        float d = -5;
-        float s = 1.0;
-        Vertex v0{};
-        v0.pos = { -1*s, 1*s, d };
-        v0.texCoord = { 0, 0 };
-        v0.color = { 1.0f, 1.0f, 1.0f };
-        vertices.push_back(v0);
+        for (const auto& shape : shapes) {
+            for (const auto& index : shape.mesh.indices) {
+                Vertex vertex{};
 
-        Vertex v1{};
-        v1.pos = { 1*s, 1*s, d };
-        v1.texCoord = { 1, 0 };
-        v1.color = { 1.0f, 1.0f, 1.0f };
-        vertices.push_back(v1);
+                vertex.pos = {
+                    attrib.vertices[3 * index.vertex_index + 0],
+                    attrib.vertices[3 * index.vertex_index + 1],
+                    attrib.vertices[3 * index.vertex_index + 2]
+                };
 
-        Vertex v2{};
-        v2.pos = { 1*s, -1*s, d };
-        v2.texCoord = { 1, 1 };
-        v2.color = { 1.0f, 1.0f, 1.0f };
-        vertices.push_back(v2);
+                vertex.texCoord = {
+                    attrib.texcoords[2 * index.texcoord_index + 0],
+                    1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+                };
 
-        Vertex v3{};
-        v3.pos = { -1*s, -1*s, d };
-        v3.texCoord = { 0, 1 };
-        v3.color = { 1.0f, 1.0f, 1.0f };
-        vertices.push_back(v3);
-        
-        indices.push_back(0);
-        indices.push_back(1);
-        indices.push_back(3);
+                vertex.color = { 1.0f, 1.0f, 1.0f };
 
-        indices.push_back(1);
-        indices.push_back(2);
-        indices.push_back(3);
- 
-        
+                if (uniqueVertices.count(vertex) == 0) {
+                    uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+                    vertices.push_back(vertex);
+                }
+
+                indices.push_back(uniqueVertices[vertex]);
+            }
+        }
     }
 
     void createVertexBuffer() {
@@ -1214,10 +1187,7 @@ public:
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
-        createBuffer(bufferSize, 
-            VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
-            stagingBuffer, stagingBufferMemory);
+        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
         void* data;
         vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
@@ -1511,8 +1481,8 @@ public:
         float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
         UniformBufferObject ubo{};
-        ubo.model = glm::identity<glm::mat4x4>(); //glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
         ubo.proj[1][1] *= -1;
 
@@ -1767,6 +1737,24 @@ public:
         return true;
     }
 
+    static std::vector<char> readFile(const std::string& filename) {
+        std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+        if (!file.is_open()) {
+            throw std::runtime_error("failed to open file! " + filename);
+        }
+
+        size_t fileSize = (size_t)file.tellg();
+        std::vector<char> buffer(fileSize);
+
+        file.seekg(0);
+        file.read(buffer.data(), fileSize);
+
+        file.close();
+
+        return buffer;
+    }
+
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
         std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
 
@@ -1774,153 +1762,17 @@ public:
     }
 };
 
-//
-//Input events from GLFW
-//
-/**********************************************************************/
-static void onKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
-    app->getInputManager()->onKey(window, key, scancode, action, mods);
-}
+int main() {
+    HelloTriangleApplication app;
 
-static void onCursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
-    Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
-    app->getInputManager()->onCursorPos(window, (int)xpos,(int)ypos);
-}
-
-static void onMouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
-    Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
-    app->getInputManager()->onMouseButton(window, button, action, mods);
-}
-
-/**********************************************************************/
-Application* Application::_instance = nullptr;
-
-/**********************************************************************/
-Application::Application() {
-    _internal = std::make_unique<InternalApplication>();
-    _internal->init();
-    _inputManager = std::make_unique<InputManager>();
-    _scene = std::make_unique<GameScene>();
-    _performance = {};
-}
-
-/**********************************************************************/
-void Application::create() {
-    if (!_instance) {
-
-        _instance = new Application();
-
-        _instance->initialize();
+    try {
+        app.run();
     }
-}
-
-/**********************************************************************/
-void Application::initialize() {
-    // setup glut input
-    glfwSetWindowUserPointer(_instance->getWindow(), _instance);
-    glfwSetKeyCallback(_instance->getWindow(), onKeyCallback);
-    glfwSetCursorPosCallback(_instance->getWindow(), onCursorPosCallback);
-    glfwSetMouseButtonCallback(_instance->getWindow(), onMouseButtonCallback);
-
-    _inputManager->cursorShowing(false);
-
-    _scene->initialize();
-}
-
-/**********************************************************************/
-Application& Application::get() {
-    return *_instance;
-}
-
-/**********************************************************************/
-const std::unique_ptr<InputManager>& Application::getInputManager()  {
-    return _inputManager;
-}
-
-/**********************************************************************/
-GLFWwindow* Application::getWindow() const  {
-    return _internal->getWindow();
-}
-
-/**********************************************************************/
-VkDevice Application::getDevice() const {
-    return _internal->getDevice();
-}
-
-/**********************************************************************/
-VkPhysicalDevice Application::getPhysicalDevice() const {
-    return _internal->getPhysicalDevice();
-}
-
-/**********************************************************************/
-VkRenderPass Application::getStandardRenderPass() const {
-    return _internal->getStandardRenderPass();
-}
-
-/**********************************************************************/
-uint16_t  Application::maxFramesInFlight() const {
-    return MAX_FRAMES_IN_FLIGHT;
-}
-
-/**********************************************************************/
-void Application::createBuffer(VkDeviceSize size, 
-    VkBufferUsageFlags usage, 
-    VkMemoryPropertyFlags properties, 
-    VkBuffer& buffer, 
-    VkDeviceMemory& bufferMemory) const {
-
-    VkBufferCreateInfo bufferInfo{};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = size;
-    bufferInfo.usage = usage;
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-    if (vkCreateBuffer(getDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-        LOGE("failed to create buffer! size: " << size);
+    catch (const std::exception& e) {
+        std::cerr << e.what() << std::endl;
+        return EXIT_FAILURE;
     }
 
-    VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(getDevice(), buffer, &memRequirements);
-
-    VkMemoryAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
-
-    if (vkAllocateMemory(getDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate buffer memory!");
-    }
-
-    vkBindBufferMemory(getDevice(), buffer, bufferMemory, 0);
+    return EXIT_SUCCESS;
 }
-
-/**********************************************************************/
-uint32_t Application::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const {
-    VkPhysicalDeviceMemoryProperties memProperties;
-    vkGetPhysicalDeviceMemoryProperties(_internal->getPhysicalDevice(), &memProperties);
-
-    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-            return i;
-        }
-    }
-
-    LOGE("failed to find suitable memory type!");
-    return -1;
-}
-
-/**********************************************************************/
-VkCommandBuffer Application::beginSingleTimeCommands() {
-    return _internal->beginSingleTimeCommands();
-}
-
-/**********************************************************************/
-void Application::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
-    _internal->endSingleTimeCommands(commandBuffer);
-}
-
-/**********************************************************************/
-void Application::run() {
-    _internal->run();
-}
+#endif

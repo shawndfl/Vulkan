@@ -11,8 +11,6 @@ std::string getPath(const std::string& path);
      std::cout << "   " <<  getPath(__FILE__) << ":" << __LINE__ << " " << _StringValue << std::endl; \
     while(0)
 
-//std::cout << "\e[0;31mE: " << __FILE__ << ":" << __LINE__ << " " << _StringValue << std::endl;
-
 #define LOGE(_StringValue) \
     do \
      std::cout << "E: " <<  getPath(__FILE__) << ":" << __LINE__ << " " << _StringValue << std::endl; \
