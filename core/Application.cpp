@@ -30,6 +30,7 @@
 
 #include "scenes/GameScene.h"
 #include "utilities/Assets.h"
+#include "core/GeometryBuffer.h"
 
 
 const uint32_t WIDTH = 800;
@@ -215,11 +216,8 @@ private:
     VkSampler textureSampler;
 
     std::vector<Vertex> vertices;
-    std::vector<uint32_t> indices;
-    VkBuffer vertexBuffer;
-    VkDeviceMemory vertexBufferMemory;
-    VkBuffer indexBuffer;
-    VkDeviceMemory indexBufferMemory;
+    std::vector<uint16_t> indices;
+    GeometryBuffer geoBuffer;
 
     std::vector<VkBuffer> uniformBuffers;
     std::vector<VkDeviceMemory> uniformBuffersMemory;
@@ -271,8 +269,7 @@ public:
         createTextureImageView();
         createTextureSampler();
         loadModel();
-        createVertexBuffer();
-        createIndexBuffer();
+        createGeometryBuffer();
         createUniformBuffers();
         createDescriptorPool();
         createDescriptorSets();
@@ -331,12 +328,8 @@ public:
 
         vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
-        vkDestroyBuffer(device, indexBuffer, nullptr);
-        vkFreeMemory(device, indexBufferMemory, nullptr);
-
-        vkDestroyBuffer(device, vertexBuffer, nullptr);
-        vkFreeMemory(device, vertexBufferMemory, nullptr);
-
+        geoBuffer.dispose();
+        
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
             vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
             vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
@@ -357,6 +350,10 @@ public:
         glfwDestroyWindow(window);
 
         glfwTerminate();
+    }
+
+    void createGeometryBuffer() {
+        geoBuffer.createBuffers<Vertex>(vertices, indices);
     }
 
     void recreateSwapChain() {
@@ -1209,48 +1206,6 @@ public:
         
     }
 
-    void createVertexBuffer() {
-        VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
-
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-        createBuffer(bufferSize, 
-            VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
-            stagingBuffer, stagingBufferMemory);
-
-        void* data;
-        vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-        memcpy(data, vertices.data(), (size_t)bufferSize);
-        vkUnmapMemory(device, stagingBufferMemory);
-
-        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
-
-        copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
-
-        vkDestroyBuffer(device, stagingBuffer, nullptr);
-        vkFreeMemory(device, stagingBufferMemory, nullptr);
-    }
-
-    void createIndexBuffer() {
-        VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
-
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-        void* data;
-        vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-        memcpy(data, indices.data(), (size_t)bufferSize);
-        vkUnmapMemory(device, stagingBufferMemory);
-
-        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
-
-        copyBuffer(stagingBuffer, indexBuffer, bufferSize);
-
-        vkDestroyBuffer(device, stagingBuffer, nullptr);
-        vkFreeMemory(device, stagingBufferMemory, nullptr);
-    }
 
     void createUniformBuffers() {
         VkDeviceSize bufferSize = sizeof(UniformBufferObject);
@@ -1466,11 +1421,11 @@ public:
         scissor.extent = swapChainExtent;
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-        VkBuffer vertexBuffers[] = { vertexBuffer };
+        VkBuffer vertexBuffers[] = { geoBuffer.getVertexBuffer()};
         VkDeviceSize offsets[] = { 0 };
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-        vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+        vkCmdBindIndexBuffer(commandBuffer, geoBuffer.getIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
 
@@ -1799,10 +1754,6 @@ Application* Application::_instance = nullptr;
 /**********************************************************************/
 Application::Application() {
     _internal = std::make_unique<InternalApplication>();
-    _internal->init();
-    _inputManager = std::make_unique<InputManager>();
-    _scene = std::make_unique<GameScene>();
-    _performance = {};
 }
 
 /**********************************************************************/
@@ -1817,6 +1768,11 @@ void Application::create() {
 
 /**********************************************************************/
 void Application::initialize() {
+    _internal->init();
+    _inputManager = std::make_unique<InputManager>();
+    _scene = std::make_unique<GameScene>();
+    _performance = {};
+
     // setup glut input
     glfwSetWindowUserPointer(_instance->getWindow(), _instance);
     glfwSetKeyCallback(_instance->getWindow(), onKeyCallback);
@@ -1911,12 +1867,12 @@ uint32_t Application::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags 
 }
 
 /**********************************************************************/
-VkCommandBuffer Application::beginSingleTimeCommands() {
+VkCommandBuffer Application::beginSingleTimeCommands() const {
     return _internal->beginSingleTimeCommands();
 }
 
 /**********************************************************************/
-void Application::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
+void Application::endSingleTimeCommands(VkCommandBuffer commandBuffer) const {
     _internal->endSingleTimeCommands(commandBuffer);
 }
 

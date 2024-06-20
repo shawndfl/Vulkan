@@ -54,8 +54,8 @@ public:
 
 	uint16_t maxFramesInFlight() const;
 
-	VkCommandBuffer beginSingleTimeCommands();
-	void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+	VkCommandBuffer beginSingleTimeCommands() const;
+	void endSingleTimeCommands(VkCommandBuffer commandBuffer) const;
 
 	/**
 	* Creates a buffers used for images, verteices, indices, and other things in video memory

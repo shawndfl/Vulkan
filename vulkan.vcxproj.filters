@@ -51,6 +51,9 @@
     <ClCompile Include="VulkanSmple.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\GeometryBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="utilities\Log.h">
@@ -90,6 +93,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="geometry\PlaneGeo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\GeometryBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
