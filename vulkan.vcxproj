@@ -135,6 +135,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="cameras\CameraFPS.cpp" />
     <ClCompile Include="core\InputManager.cpp" />
     <ClCompile Include="core\GeometryBuffer.cpp" />
     <ClCompile Include="geometry\PlaneGeo.cpp" />
@@ -150,12 +151,14 @@
     <ClCompile Include="VulkanSmple.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cameras\CameraFPS.h" />
     <ClInclude Include="core\Application.h" />
     <ClInclude Include="core\InputManager.h" />
     <ClInclude Include="core\IGraphicPipeline.h" />
     <ClInclude Include="core\IScene.h" />
     <ClInclude Include="core\GeometryBuffer.h" />
     <ClInclude Include="geometry\PlaneGeo.h" />
+    <ClInclude Include="geometry\VertexTypes.h" />
     <ClInclude Include="scenes\GameScene.h" />
     <ClInclude Include="ISystemManager.h" />
     <ClInclude Include="core\Texture.h" />

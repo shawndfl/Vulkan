@@ -18,4 +18,8 @@ public:
 	virtual VkCommandBuffer beginSingleTimeCommands() = 0;
 
 	virtual void endSingleTimeCommands(VkCommandBuffer commandBuffer) = 0;
+
+	virtual int getWidth() const = 0;
+
+	virtual int getHeight() const = 0;
 };

@@ -28,6 +28,11 @@ VkBuffer GeometryBuffer::getIndexBuffer() const {
 }
 
 /**********************************************************************/
+uint32_t GeometryBuffer::getIndexCount() const {
+    return indexCount;
+}
+
+/**********************************************************************/
 void GeometryBuffer::dispose() {
     const Application& app = Application::get();
     vkDestroyBuffer(app.getDevice(), indexBuffer, nullptr);
@@ -67,6 +72,7 @@ void GeometryBuffer::createVertexBuffer(const void* vertexData, const int dataSi
 void GeometryBuffer::createIndexBuffer(const void* indexData, const int dataSize, size_t elementCount) {
     const Application& app = Application::get();
     VkDeviceSize bufferSize = dataSize * elementCount;
+    indexCount = (int)elementCount;
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;

@@ -31,7 +31,9 @@
 #include "scenes/GameScene.h"
 #include "utilities/Assets.h"
 #include "core/GeometryBuffer.h"
-
+#include "geometry/VertexTypes.h"
+#include "geometry/PlaneGeo.h"
+#include "cameras/CameraFPS.h"
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -87,60 +89,6 @@ struct SwapChainSupportDetails {
     std::vector<VkPresentModeKHR> presentModes;
 };
 
-struct Vertex {
-    glm::vec3 pos;
-    glm::vec3 color;
-    glm::vec2 texCoord;
-
-    static VkVertexInputBindingDescription getBindingDescription() {
-        VkVertexInputBindingDescription bindingDescription{};
-        bindingDescription.binding = 0;
-        bindingDescription.stride = sizeof(Vertex);
-        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-        return bindingDescription;
-    }
-
-    static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
-        std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
-
-        attributeDescriptions[0].binding = 0;
-        attributeDescriptions[0].location = 0;
-        attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[0].offset = offsetof(Vertex, pos);
-
-        attributeDescriptions[1].binding = 0;
-        attributeDescriptions[1].location = 1;
-        attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[1].offset = offsetof(Vertex, color);
-
-        attributeDescriptions[2].binding = 0;
-        attributeDescriptions[2].location = 2;
-        attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-        attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
-
-        return attributeDescriptions;
-    }
-
-    bool operator==(const Vertex& other) const {
-        return pos == other.pos && color == other.color && texCoord == other.texCoord;
-    }
-};
-
-namespace std {
-    template<> struct hash<Vertex> {
-        size_t operator()(Vertex const& vertex) const {
-            return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (hash<glm::vec2>()(vertex.texCoord) << 1);
-        }
-    };
-}
-
-struct UniformBufferObject {
-    alignas(16) glm::mat4 model;
-    alignas(16) glm::mat4 view;
-    alignas(16) glm::mat4 proj;
-};
-
 /**
 * Internal class that sets up the vulkan application
 */
@@ -171,6 +119,14 @@ public:
 
     virtual VkPhysicalDevice getPhysicalDevice() const {
         return physicalDevice;
+    }
+
+    virtual int getWidth() const {
+        return swapChainExtent.width;
+    }
+
+    virtual int getHeight() const {
+        return swapChainExtent.height;
     }
 
 private:
@@ -215,9 +171,8 @@ private:
     VkImageView textureImageView;
     VkSampler textureSampler;
 
-    std::vector<Vertex> vertices;
-    std::vector<uint16_t> indices;
     GeometryBuffer geoBuffer;
+    CameraFPS camera;
 
     std::vector<VkBuffer> uniformBuffers;
     std::vector<VkDeviceMemory> uniformBuffersMemory;
@@ -243,6 +198,8 @@ public:
         window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
         glfwSetWindowUserPointer(window, this);
         glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+
+        camera.registerForInput();
     }
 
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
@@ -268,7 +225,6 @@ public:
         createTextureImage();
         createTextureImageView();
         createTextureSampler();
-        loadModel();
         createGeometryBuffer();
         createUniformBuffers();
         createDescriptorPool();
@@ -353,7 +309,16 @@ public:
     }
 
     void createGeometryBuffer() {
-        geoBuffer.createBuffers<Vertex>(vertices, indices);
+        std::vector< VertexTextureColor> verts;
+        std::vector<uint16_t> indices;
+        PlaneGeo::buildPlan(verts, indices);
+
+        glm::mat4 transform = glm::scale(glm::mat4(1), glm::vec3(10));
+        transform = glm::rotate(transform, glm::radians(45.0f), glm::vec3(1, 0, 0));
+        transform = glm::translate(transform, glm::vec3(0, 0, 0));
+        PlaneGeo::applyTransform(verts, transform);
+
+        geoBuffer.createBuffers<VertexTextureColor>(verts, indices);
     }
 
     void recreateSwapChain() {
@@ -560,6 +525,9 @@ public:
 
         swapChainImageFormat = surfaceFormat.format;
         swapChainExtent = extent;
+
+        // initailze the camera now that we know the swapChainExtent
+        camera.initialize();
     }
 
     void createImageViews() {
@@ -693,8 +661,8 @@ public:
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-        auto bindingDescription = Vertex::getBindingDescription();
-        auto attributeDescriptions = Vertex::getAttributeDescriptions();
+        auto bindingDescription = VertexTextureColor::getBindingDescription();
+        auto attributeDescriptions = VertexTextureColor::getAttributeDescriptions();
 
         vertexInputInfo.vertexBindingDescriptionCount = 1;
         vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
@@ -1165,47 +1133,6 @@ public:
         endSingleTimeCommands(commandBuffer);
     }
 
-    void loadModel() {
-       
-        std::unordered_map<Vertex, uint32_t> uniqueVertices{};
-
-        float d = -5;
-        float s = 1.0;
-        Vertex v0{};
-        v0.pos = { -1*s, 1*s, d };
-        v0.texCoord = { 0, 0 };
-        v0.color = { 1.0f, 1.0f, 1.0f };
-        vertices.push_back(v0);
-
-        Vertex v1{};
-        v1.pos = { 1*s, 1*s, d };
-        v1.texCoord = { 1, 0 };
-        v1.color = { 1.0f, 1.0f, 1.0f };
-        vertices.push_back(v1);
-
-        Vertex v2{};
-        v2.pos = { 1*s, -1*s, d };
-        v2.texCoord = { 1, 1 };
-        v2.color = { 1.0f, 1.0f, 1.0f };
-        vertices.push_back(v2);
-
-        Vertex v3{};
-        v3.pos = { -1*s, -1*s, d };
-        v3.texCoord = { 0, 1 };
-        v3.color = { 1.0f, 1.0f, 1.0f };
-        vertices.push_back(v3);
-        
-        indices.push_back(0);
-        indices.push_back(1);
-        indices.push_back(3);
-
-        indices.push_back(1);
-        indices.push_back(2);
-        indices.push_back(3);
- 
-        
-    }
-
 
     void createUniformBuffers() {
         VkDeviceSize bufferSize = sizeof(UniformBufferObject);
@@ -1429,7 +1356,7 @@ public:
 
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
 
-        vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffer, geoBuffer.getIndexCount(), 1, 0, 0, 0);
 
         vkCmdEndRenderPass(commandBuffer);
 
@@ -1465,13 +1392,10 @@ public:
         auto currentTime = std::chrono::high_resolution_clock::now();
         float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-        UniformBufferObject ubo{};
-        ubo.model = glm::identity<glm::mat4x4>(); //glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
-        ubo.proj[1][1] *= -1;
+        // update the camera
+        camera.update(time);
 
-        memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
+        memcpy(uniformBuffersMapped[currentImage], &camera.getUbo(), sizeof(camera.getUbo()));
     }
 
     void drawFrame() {
@@ -1727,6 +1651,8 @@ public:
 
         return VK_FALSE;
     }
+
+
 };
 
 //
@@ -1768,9 +1694,11 @@ void Application::create() {
 
 /**********************************************************************/
 void Application::initialize() {
-    _internal->init();
     _inputManager = std::make_unique<InputManager>();
     _scene = std::make_unique<GameScene>();
+
+    _internal->init();
+    
     _performance = {};
 
     // setup glut input
@@ -1790,13 +1718,23 @@ Application& Application::get() {
 }
 
 /**********************************************************************/
-const std::unique_ptr<InputManager>& Application::getInputManager()  {
+std::unique_ptr<InputManager>& Application::getInputManager()  {
     return _inputManager;
 }
 
 /**********************************************************************/
 GLFWwindow* Application::getWindow() const  {
     return _internal->getWindow();
+}
+
+/**********************************************************************/
+int Application::getWidth() const {
+    return _internal->getWidth();
+}
+
+/**********************************************************************/
+int Application::getHeight() const {
+    return _internal->getHeight();
 }
 
 /**********************************************************************/

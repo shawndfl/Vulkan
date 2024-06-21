@@ -41,7 +41,7 @@ public:
 	*/
 	static Application& get();
 	
-	const std::unique_ptr<InputManager>& getInputManager();
+	std::unique_ptr<InputManager>& getInputManager();
 
 public: 
 	GLFWwindow* getWindow() const;
@@ -56,6 +56,10 @@ public:
 
 	VkCommandBuffer beginSingleTimeCommands() const;
 	void endSingleTimeCommands(VkCommandBuffer commandBuffer) const;
+
+	int getWidth() const;
+
+	int getHeight() const;
 
 	/**
 	* Creates a buffers used for images, verteices, indices, and other things in video memory

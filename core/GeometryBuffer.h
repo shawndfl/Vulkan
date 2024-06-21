@@ -13,10 +13,12 @@ private :
 	VkDeviceMemory vertexBufferMemory;
 	VkBuffer indexBuffer;
 	VkDeviceMemory indexBufferMemory;
+	uint32_t indexCount;
 
 public:
 	VkBuffer getVertexBuffer() const;
 	VkBuffer getIndexBuffer() const;
+	uint32_t getIndexCount() const;
 
 	template<class T>
 	void createBuffers(const std::vector<T>& vertexData, const std::vector<unsigned short>& indexData);
