@@ -12,11 +12,11 @@ void GameScene::initialize() {
 }
 
 /**********************************************************************/
-void GameScene::render(float ms) {
-
+void GameScene::render(float dt) {
+	//LOGI("update " << dt);
 }
 
 /**********************************************************************/
-void GameScene::destroy() {
+void GameScene::dispose() {
 
 }

@@ -4,8 +4,8 @@ class GameScene: public IScene {
 public:
 	void initialize();
 
-	void render(float ms);
+	void render(float dt);
 
-	void destroy();
+	void dispose();
 };
 

@@ -9,8 +9,6 @@ public:
 
 	virtual void init() = 0;
 
-	virtual void run() = 0;
-
 	virtual GLFWwindow* getWindow() const = 0;
 
 	virtual VkPhysicalDevice getPhysicalDevice() const = 0;
@@ -22,4 +20,8 @@ public:
 	virtual int getWidth() const = 0;
 
 	virtual int getHeight() const = 0;
+
+	virtual void update(float dt) = 0;
+
+	virtual void dispose() = 0;
 };

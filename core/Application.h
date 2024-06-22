@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 
 #include <memory>
+#include <chrono>
 
 #include "core/InputManager.h"
 #include "core/IScene.h"
@@ -28,7 +29,7 @@ private:
 
 	std::unique_ptr<IScene> _scene;
 
-
+	std::chrono::steady_clock::time_point lastTime;
 
 public:
 	/**

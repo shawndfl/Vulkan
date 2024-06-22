@@ -10,11 +10,7 @@ public:
 
 	virtual void initialize() = 0;
 
-	virtual void render(float ms) = 0;
+	virtual void render(float dt) = 0;
 
-	virtual void preUpdate(float ms) {}
-
-	virtual void postUpdate(float ms){}
-
-	virtual void destroy() = 0;
+	virtual void dispose() = 0;
 };

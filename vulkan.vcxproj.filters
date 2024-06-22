@@ -57,6 +57,9 @@
     <ClCompile Include="cameras\CameraFPS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="pipelines\ImagePipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="utilities\Log.h">
@@ -105,6 +108,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cameras\CameraFPS.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pipelines\ImagePipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

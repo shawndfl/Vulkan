@@ -139,6 +139,7 @@
     <ClCompile Include="core\InputManager.cpp" />
     <ClCompile Include="core\GeometryBuffer.cpp" />
     <ClCompile Include="geometry\PlaneGeo.cpp" />
+    <ClCompile Include="pipelines\ImagePipeline.cpp" />
     <ClCompile Include="scenes\GameScene.cpp" />
     <ClCompile Include="ISystemManager.cpp" />
     <ClCompile Include="core\Texture.cpp" />
@@ -159,6 +160,7 @@
     <ClInclude Include="core\GeometryBuffer.h" />
     <ClInclude Include="geometry\PlaneGeo.h" />
     <ClInclude Include="geometry\VertexTypes.h" />
+    <ClInclude Include="pipelines\ImagePipeline.h" />
     <ClInclude Include="scenes\GameScene.h" />
     <ClInclude Include="ISystemManager.h" />
     <ClInclude Include="core\Texture.h" />

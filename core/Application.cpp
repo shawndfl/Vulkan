@@ -102,11 +102,6 @@ public:
         initVulkan();
     }
 
-    virtual void run() {
-        mainLoop();
-        cleanup();
-    }
-
     virtual VkDevice getDevice() const {
         return device;
     }
@@ -129,6 +124,14 @@ public:
 
     virtual int getHeight() const {
         return swapChainExtent.height;
+    }
+
+    virtual void update(float dt) {
+        drawFrame();
+    }
+
+    virtual void dispose() {
+        cleanup();
     }
 
 private:
@@ -1712,6 +1715,9 @@ void Application::initialize() {
     _inputManager->cursorShowing(false);
 
     _scene->initialize();
+
+    // initialize the time
+    lastTime = std::chrono::high_resolution_clock::now();
 }
 
 /**********************************************************************/
@@ -1818,5 +1824,31 @@ void Application::endSingleTimeCommands(VkCommandBuffer commandBuffer) const {
 
 /**********************************************************************/
 void Application::run() {
-    _internal->run();
+
+
+    // main loop
+    while (!glfwWindowShouldClose(getWindow())) {
+        _performance.preUpdate();
+
+        // time
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        float dt = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - lastTime).count();
+        lastTime = currentTime;
+
+        glfwPollEvents();
+
+        _internal->update(dt);
+
+        // main scene update
+        _scene->render(dt);
+
+        _performance.update(dt);
+    }
+
+    vkDeviceWaitIdle(getDevice());
+
+    _scene->dispose();
+    _internal->dispose();
+
+
 }
