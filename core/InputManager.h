@@ -13,8 +13,8 @@
 class InputManager {
 private:
 	bool _showingCursor;
-	std::map<std::string, std::function<void( int key, int scancode, int action, int mods)>> keyHandlers;
-	std::map<std::string, std::function<void( int button, int action, int mods, int x, int y)>> mouseHandlers;
+	std::map<std::string, std::function<void(int key, int scancode, int action, int mods)>> keyHandlers;
+	std::map<std::string, std::function<void(int button, int action, int mods, int x, int y)>> mouseHandlers;
 	int lastX;
 	int lastY;
 	int lastMouseButton;
@@ -24,9 +24,9 @@ private:
 public:
 	InputManager();
 
-	void registerKeyboardHandler(const std::string& id, std::function<void( int key, int scancode, int action, int mods)> fn);
+	void registerKeyboardHandler(const std::string& id, std::function<void(int key, int scancode, int action, int mods)> fn);
 
-	void registerMouseHandler(const std::string& id, std::function<void( int button, int action, int mods, int x, int y)> fn);
+	void registerMouseHandler(const std::string& id, std::function<void(int button, int action, int mods, int x, int y)> fn);
 
 	void cursorShowing(bool show);
 

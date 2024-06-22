@@ -4,7 +4,6 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-
 struct UniformBufferObject {
 	alignas(16) glm::mat4 model;
 	alignas(16) glm::mat4 view;
@@ -16,7 +15,11 @@ private:
 	UniformBufferObject ubo;
 
 	glm::vec3 position;
+	glm::vec3 direction;
+	glm::vec3 forward;
+	glm::vec3 up;
 	glm::vec3 angles;
+	glm::vec2 lastMousePos;
 
 public:
 
@@ -26,14 +29,8 @@ public:
 
 	const UniformBufferObject& getUbo() const;
 
-	const glm::mat4& getView() const;
-	const glm::mat4& getProject() const;
-
 	void update(float dt);
 
-	void pan(float dx, float dy);
-
-	void move(const glm::vec3& direction);
 private:
 	void handleMouse( int button, int action, int mods, int x, int y);
 	void handleKeyboard( int key, int scancode, int action, int mods);

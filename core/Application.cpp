@@ -34,6 +34,8 @@
 #include "geometry/VertexTypes.h"
 #include "geometry/PlaneGeo.h"
 #include "cameras/CameraFPS.h"
+#include "utilities/Log.h"
+
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
