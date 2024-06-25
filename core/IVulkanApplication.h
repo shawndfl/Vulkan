@@ -24,4 +24,10 @@ public:
 	virtual void update(float dt) = 0;
 
 	virtual void dispose() = 0;
+
+	virtual VkSampleCountFlagBits getmMsaaSamples() const = 0;
+
+	virtual VkFormat findDepthFormat() const = 0;
+
+	virtual VkFormat getSwapChainImageFormat() const = 0;
 };

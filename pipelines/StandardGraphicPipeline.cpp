@@ -2,6 +2,7 @@
 #include <vulkan/vulkan.h>
 #include "utilities/Assets.h"
 #include "utilities/Log.h"
+#include "geometry/VertexTypes.h"
 
 
 const char* VertShaderCodePath = "./shaders/main.vert.spv";
@@ -55,8 +56,8 @@ void StandardGraphicPipeline::initialize(const struct StandardGraphicPipelineDat
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-    auto bindingDescription = Vertex::getBindingDescription();
-    auto attributeDescriptions = Vertex::getAttributeDescriptions();
+    auto bindingDescription = VertexTextureColor::getBindingDescription();
+    auto attributeDescriptions = VertexTextureColor::getAttributeDescriptions();
 
     vertexInputInfo.vertexBindingDescriptionCount = 1;
     vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
@@ -233,7 +234,8 @@ void StandardGraphicPipeline::createDescriptorSets() {
         VkDescriptorBufferInfo bufferInfo{};
         bufferInfo.buffer = uniformBuffers[i];
         bufferInfo.offset = 0;
-        bufferInfo.range = sizeof(UniformBufferObject);
+        //TODO 
+        //bufferInfo.range = sizeof(UniformBufferObject);
 
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;

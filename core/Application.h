@@ -62,6 +62,12 @@ public:
 
 	int getHeight() const;
 
+	VkFormat findDepthFormat() const;
+
+	VkSampleCountFlagBits getMsaaSamples() const;
+
+	VkFormat getSwapChainImageFormat() const;
+
 	/**
 	* Creates a buffers used for images, verteices, indices, and other things in video memory
 	*/
