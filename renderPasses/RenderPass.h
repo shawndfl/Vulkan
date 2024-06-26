@@ -2,7 +2,7 @@
 #include <vulkan/vulkan.h>
 #include "core/IDisposable.h"
 
-class StandardRenderPass: public IDisposable
+class RenderPass: public IDisposable
 {
 public:
 	void Initialize();

@@ -1,9 +1,9 @@
-#include "StandardRenderPass.h"
+#include "RenderPass.h"
 #include "core/Application.h"
 #include <array>
 
 /**********************************************************************/
-void StandardRenderPass::Initialize() {
+void RenderPass::Initialize() {
     const Application& app = Application::get();
     const auto device = app.getDevice();
 
@@ -80,12 +80,12 @@ void StandardRenderPass::Initialize() {
 }
 
 /**********************************************************************/
-VkRenderPass StandardRenderPass::getRenderPass() const {
+VkRenderPass RenderPass::getRenderPass() const {
     return m_renderPass;
 }
 
 /**********************************************************************/
-void StandardRenderPass::dispose() {
+void RenderPass::dispose() {
     const Application& app = Application::get();
     const auto device = app.getDevice();
     vkDestroyRenderPass(device, m_renderPass, nullptr);

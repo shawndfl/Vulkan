@@ -63,7 +63,13 @@
     <ClCompile Include="cameras\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="renderPasses\StandardRenderPass.cpp">
+    <ClCompile Include="renderPasses\RenderPass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\SwapChain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\DeviceImage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -122,10 +128,16 @@
     <ClInclude Include="cameras\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="renderPasses\StandardRenderPass.h">
+    <ClInclude Include="renderPasses\RenderPass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core\IDisposable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\SwapChain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\DeviceImage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

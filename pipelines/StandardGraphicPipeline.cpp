@@ -143,7 +143,7 @@ void StandardGraphicPipeline::initialize(const struct StandardGraphicPipelineDat
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
     pipelineInfo.layout = pipelineLayout;
-    pipelineInfo.renderPass = Application::get().getStandardRenderPass();
+    pipelineInfo.renderPass = Application::get().getRenderPass();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
     auto device = Application::get().getDevice();

@@ -1,11 +1,12 @@
 #pragma once
 #include <vulkan/vulkan.h>
+struct QueueFamilyIndices;
 
 class IVulkanApplication {
 public:
 	virtual VkDevice getDevice() const = 0;
 
-	virtual VkRenderPass getStandardRenderPass() const = 0;
+	virtual VkRenderPass getRenderPass() const = 0;
 
 	virtual void init() = 0;
 
@@ -30,4 +31,8 @@ public:
 	virtual VkFormat findDepthFormat() const = 0;
 
 	virtual VkFormat getSwapChainImageFormat() const = 0;
+
+	virtual VkSurfaceKHR getSurface() const = 0;
+
+	virtual QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) = 0;
 };

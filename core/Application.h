@@ -9,28 +9,21 @@
 #include "core/IScene.h"
 #include "IVulkanApplication.h"
 #include "utilities/Performance.h"
+#include <optional>
+
+struct QueueFamilyIndices {
+	std::optional<uint32_t> graphicsFamily;
+	std::optional<uint32_t> presentFamily;
+
+	bool isComplete() {
+		return graphicsFamily.has_value() && presentFamily.has_value();
+	}
+};
 
 /**
 * Main application that runs everything
 */
 class Application {
-private:
-	Application();
-	/**
-	* Single instance of the class
-	*/
-	static Application* _instance;
-
-	std::unique_ptr<IVulkanApplication> _internal;
-
-	std::unique_ptr<InputManager> _inputManager;
-
-	struct Performance _performance;
-
-	std::unique_ptr<IScene> _scene;
-
-	std::chrono::steady_clock::time_point lastTime;
-
 public:
 	/**
 	* Create the only instance of this application
@@ -51,7 +44,7 @@ public:
 
 	VkPhysicalDevice getPhysicalDevice() const;
 
-	VkRenderPass getStandardRenderPass() const;
+	VkRenderPass getRenderPass() const;
 
 	uint16_t maxFramesInFlight() const;
 
@@ -67,6 +60,10 @@ public:
 	VkSampleCountFlagBits getMsaaSamples() const;
 
 	VkFormat getSwapChainImageFormat() const;
+
+	VkSurfaceKHR getSurface() const;
+
+	QueueFamilyIndices findQueueFamilies() const;
 
 	/**
 	* Creates a buffers used for images, verteices, indices, and other things in video memory
@@ -92,5 +89,23 @@ public:
 private:
 
 	void initialize();
+
+private:
+	Application();
+	/**
+	* Single instance of the class
+	*/
+	static Application* m_instance;
+
+	std::unique_ptr<IVulkanApplication> m_internal;
+
+	std::unique_ptr<InputManager> _inputManager;
+
+	struct Performance _performance;
+
+	std::unique_ptr<IScene> _scene;
+
+	std::chrono::steady_clock::time_point lastTime;
+
 
 };
