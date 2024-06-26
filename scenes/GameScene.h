@@ -1,20 +1,20 @@
 #pragma once
 #include <memory>
 #include "core/IScene.h"
-#include "pipelines/ImagePipeline.h"
 #include "core/IDisposable.h"
 
-class ImagePipeline;
+class FontManager;
 
 class GameScene: public IScene, public IDisposable {
 private:
-	std::unique_ptr<ImagePipeline> _image;
+	std::unique_ptr<FontManager> m_font;
 
 public:
-	GameScene(); 
+	GameScene();
+
 	void initialize();
 
-	void render(float dt);
+	void update(float dt);
 
 	void dispose();
 };

@@ -8,8 +8,6 @@
 * TODO add shader, uniform for camera matrices, buffers, quad geometry, texture, setup pipline
 * 
 */
-
-
 class ImagePipeline {
 private:
 	Texture _texture;

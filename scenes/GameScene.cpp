@@ -1,28 +1,25 @@
 #include "GameScene.h"
 #include "core/IScene.h"
-#include "pipelines/StandardGraphicPipeline.h"
 #include "utilities/Log.h"
+#include "systems/FontManager.h"
 
+/**********************************************************************/
 GameScene::GameScene() {
-	_image = std::make_unique<ImagePipeline>();
+	m_font = std::make_unique<FontManager>();
 }
 
 /**********************************************************************/
 void GameScene::initialize() {
 	LOGI("initializing the scene");
-	_image->initialize();
-	//StandardGraphicPipelineData data;
-	//StandardGraphicPipeline pipeline(data);
-
+	m_font->initialize();
 }
 
 /**********************************************************************/
-void GameScene::render(float dt) {
-	_image->update(dt);
-	//LOGI("update " << dt);
+void GameScene::update(float dt) {
+	m_font->update(dt);
 }
 
 /**********************************************************************/
 void GameScene::dispose() {
-
+	m_font->dispose();
 }

@@ -65,6 +65,8 @@ public:
 
 	QueueFamilyIndices findQueueFamilies() const;
 
+	virtual VkQueue getGraphicsQueue() const;
+
 	/**
 	* Creates a buffers used for images, verteices, indices, and other things in video memory
 	*/

@@ -137,9 +137,11 @@
   <ItemGroup>
     <ClCompile Include="cameras\Camera.cpp" />
     <ClCompile Include="cameras\CameraFPS.cpp" />
+    <ClCompile Include="core\CommandManager.cpp" />
     <ClCompile Include="core\InputManager.cpp" />
     <ClCompile Include="core\GeometryBuffer.cpp" />
     <ClCompile Include="core\DeviceImage.cpp" />
+    <ClCompile Include="systems\FontManager.cpp" />
     <ClCompile Include="geometry\PlaneGeo.cpp" />
     <ClCompile Include="pipelines\ImagePipeline.cpp" />
     <ClCompile Include="scenes\GameScene.cpp" />
@@ -158,6 +160,7 @@
   <ItemGroup>
     <ClInclude Include="cameras\Camera.h" />
     <ClInclude Include="cameras\CameraFPS.h" />
+    <ClInclude Include="core\CommandManager.h" />
     <ClInclude Include="core\Application.h" />
     <ClInclude Include="core\IDisposable.h" />
     <ClInclude Include="core\InputManager.h" />
@@ -165,6 +168,7 @@
     <ClInclude Include="core\IScene.h" />
     <ClInclude Include="core\GeometryBuffer.h" />
     <ClInclude Include="core\DeviceImage.h" />
+    <ClInclude Include="systems\FontManager.h" />
     <ClInclude Include="geometry\PlaneGeo.h" />
     <ClInclude Include="geometry\VertexTypes.h" />
     <ClInclude Include="pipelines\ImagePipeline.h" />

@@ -35,4 +35,6 @@ public:
 	virtual VkSurfaceKHR getSurface() const = 0;
 
 	virtual QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) = 0;
+
+	virtual VkQueue getGraphicsQueue() const = 0;
 };

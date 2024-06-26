@@ -72,6 +72,12 @@
     <ClCompile Include="core\DeviceImage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\CommandManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="systems\FontManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="utilities\Log.h">
@@ -138,6 +144,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core\DeviceImage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\CommandManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="systems\FontManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
