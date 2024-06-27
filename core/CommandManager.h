@@ -8,9 +8,9 @@ public:
 	void createCommandPool();
 	void dispose();
 
-	VkCommandBuffer beginSingleTimeCommands();
+	VkCommandBuffer beginSingleTimeCommands() const;
 
-    void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+    void endSingleTimeCommands(VkCommandBuffer commandBuffer) const;
 
 	void createCommandBuffers();
 

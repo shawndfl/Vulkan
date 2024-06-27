@@ -7,7 +7,7 @@ void CommandManager::createCommandPool() {
     const Application& app = Application::get();
     const VkDevice device = app.getDevice();
 
-    QueueFamilyIndices queueFamilyIndices = app.findQueueFamilies();
+    QueueFamilyIndices queueFamilyIndices = app.findQueueFamilies(app.getPhysicalDevice());
 
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -29,7 +29,7 @@ void CommandManager::dispose() {
 }
 
 /**********************************************************************/
-VkCommandBuffer CommandManager::beginSingleTimeCommands() {
+VkCommandBuffer CommandManager::beginSingleTimeCommands() const {
     const Application& app = Application::get();
     const VkDevice device = app.getDevice();
 
@@ -52,7 +52,7 @@ VkCommandBuffer CommandManager::beginSingleTimeCommands() {
 }
 
 /**********************************************************************/
-void CommandManager::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
+void CommandManager::endSingleTimeCommands(VkCommandBuffer commandBuffer) const {
     const Application& app = Application::get();
     const VkDevice device = app.getDevice();
 

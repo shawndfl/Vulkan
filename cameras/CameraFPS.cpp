@@ -1,6 +1,7 @@
 #include "CameraFPS.h"
-#include "core/Application.h"
 #include <glm/gtc/matrix_transform.hpp>
+#include <functional>
+#include "core/Application.h"
 #include "utilities/Log.h"
 
 const float panSpeed = .1f;
