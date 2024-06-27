@@ -39,6 +39,11 @@ public:
 	* Get the only instance of this applicaiton
 	*/
 	static Application& get();
+
+    /**
+    * Initialize the application. Create the window, initialize Vulkan, initialize systems
+    */
+    void initialize();
 	
 	std::unique_ptr<InputManager>& getInputManager();
 
@@ -51,8 +56,6 @@ public:
 	VkRenderPass getRenderPass() const;
 
 	uint16_t maxFramesInFlight() const;
-
-    void update(float dt);
 
     void dispose();
 
@@ -72,6 +75,8 @@ public:
 
 	VkQueue getGraphicsQueue() const;
 
+    uint16_t getCurrentFrame() const;
+
 	/**
 	* Creates a buffers used for images, verteices, indices, and other things in video memory
 	*/
@@ -90,12 +95,7 @@ public:
 
 	void run();
 
-	/**
-	* The glf callback that calls onKey
-	*/
-	friend void onKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-
-	void initialize();
+    CommandManager& getCommandManager() const;
 
     VkCommandBuffer beginSingleTimeCommands() const;
 
@@ -109,11 +109,7 @@ private:
     */
 	Application();
 
-    void init();
-
     void initWindow();
-
-    static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 
     void initVulkan();
 
@@ -166,7 +162,6 @@ private:
 
     void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 
-
     void createUniformBuffers();
 
     void createDescriptorPool();
@@ -195,11 +190,20 @@ private:
 
     bool checkValidationLayerSupport();
 
+    // callbacks
+    static void onKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+    static void onCursorPosCallback(GLFWwindow* window, double xpos, double ypos);
+
+    static void onMouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
         VkDebugUtilsMessageTypeFlagsEXT messageType, 
         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
         void* pUserData);
+
+    static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 
 private:
     /**
@@ -208,10 +212,14 @@ private:
     static Application* m_instance;
 
     std::unique_ptr<InputManager> _inputManager;
+    std::unique_ptr<GeometryBuffer> m_geoBuffer;
+    std::unique_ptr<CameraFPS> m_camera;
+    std::unique_ptr<RenderPass> m_renderPass;
+    std::unique_ptr<SwapChain> m_swapChain;
+    std::unique_ptr<IScene> m_scene;
+    std::unique_ptr<CommandManager> m_commandManager;
 
     struct Performance _performance;
-
-    std::unique_ptr<IScene> _scene;
 
     std::chrono::steady_clock::time_point lastTime;
 
@@ -232,18 +240,11 @@ private:
     VkPipelineLayout pipelineLayout;
     VkPipeline graphicsPipeline;
 
-    CommandManager m_commandManager;
-
     uint32_t mipLevels;
     VkImage textureImage;
     VkDeviceMemory textureImageMemory;
     VkImageView textureImageView;
     VkSampler textureSampler;
-
-    std::unique_ptr<GeometryBuffer> m_geoBuffer;
-    std::unique_ptr<CameraFPS> m_camera;
-    std::unique_ptr<RenderPass> m_renderPass;
-    std::unique_ptr<SwapChain> m_swapChain;
 
     std::vector<VkBuffer> uniformBuffers;
     std::vector<VkDeviceMemory> uniformBuffersMemory;
@@ -255,7 +256,7 @@ private:
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;
     std::vector<VkFence> inFlightFences;
-    uint32_t currentFrame = 0;
+    uint32_t m_currentFrame = 0;
 
     bool framebufferResized = false;
 };

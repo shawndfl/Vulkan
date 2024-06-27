@@ -16,6 +16,8 @@ public:
 
 	const std::vector<VkCommandBuffer>& getDrawingCommandBuffers() const;
 
+	VkCommandBuffer getActiveDrawingCommand() const;
+
 private:
 	VkCommandPool m_commandPool;
 

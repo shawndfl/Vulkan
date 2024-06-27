@@ -43,29 +43,50 @@ const uint32_t HEIGHT = 600;
 const std::string MODEL_PATH = "./assets/viking_room.obj";
 const std::string TEXTURE_PATH = "./assets/viking_room.png";
 
+/**
+* Duble buffering
+*/
 const int MAX_FRAMES_IN_FLIGHT = 2;
-
 
 //
 //Input events from GLFW
 //
 
 /**********************************************************************/
-static void onKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+void Application::onKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
     app->getInputManager()->onKey(window, key, scancode, action, mods);
 }
 
-static void onCursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
+/**********************************************************************/
+void Application::onCursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
     Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
     app->getInputManager()->onCursorPos(window, (int)xpos, (int)ypos);
 }
 
-static void onMouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+/**********************************************************************/
+void Application::onMouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
     Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
     app->getInputManager()->onMouseButton(window, button, action, mods);
 }
 
+/**********************************************************************/
+void Application::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
+    auto app = reinterpret_cast<Application*>(glfwGetWindowUserPointer(window));
+    app->framebufferResized = true;
+}
+
+/**********************************************************************/
+VKAPI_ATTR VkBool32 VKAPI_CALL Application::debugCallback(
+    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+    VkDebugUtilsMessageTypeFlagsEXT messageType,
+    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+    void* pUserData) {
+
+    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+
+    return VK_FALSE;
+}
 
 //
 // Validation layers
@@ -101,11 +122,6 @@ void DestroyDebugUtilsMessengerEXT2(VkInstance instance, VkDebugUtilsMessengerEX
     }
 }
 
-void Application::init() {
-    initWindow();
-    initVulkan();
-}
-
 VkDevice Application::getDevice() const {
     return device;
 }
@@ -128,10 +144,6 @@ int Application::getWidth() const {
 
 int Application::getHeight() const {
     return m_swapChain->getHeight();
-}
-
-void Application::update(float dt) {
-    drawFrame();
 }
 
 void Application::dispose() {
@@ -164,11 +176,6 @@ void Application::initWindow() {
     glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 
     m_camera->registerForInput();
-}
-
-void Application::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-    auto app = reinterpret_cast<Application*>(glfwGetWindowUserPointer(window));
-    app->framebufferResized = true;
 }
 
 void Application::initVulkan() {
@@ -233,7 +240,7 @@ void Application::cleanup() {
         vkDestroyFence(device, inFlightFences[i], nullptr);
     }
 
-    m_commandManager.dispose();
+    m_commandManager->dispose();
 
     vkDestroyDevice(device, nullptr);
 
@@ -577,7 +584,7 @@ void Application::createGraphicsPipeline() {
 }
 
 void Application::createCommandPool() {
-    m_commandManager.createCommandPool();
+    m_commandManager->createCommandPool();
 }
 
 VkFormat Application::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const {
@@ -971,12 +978,12 @@ void Application::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMe
 
 /**********************************************************************/
 VkCommandBuffer Application::beginSingleTimeCommands() const {
-    return m_commandManager.beginSingleTimeCommands();
+    return m_commandManager->beginSingleTimeCommands();
 }
 
 /**********************************************************************/
 void Application::endSingleTimeCommands(VkCommandBuffer commandBuffer) const {
-    m_commandManager.endSingleTimeCommands(commandBuffer);
+    m_commandManager->endSingleTimeCommands(commandBuffer);
 }
 
 /**********************************************************************/
@@ -1051,7 +1058,7 @@ void Application::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t im
 
     vkCmdBindIndexBuffer(commandBuffer, m_geoBuffer->getIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[m_currentFrame], 0, nullptr);
 
     vkCmdDrawIndexed(commandBuffer, m_geoBuffer->getIndexCount(), 1, 0, 0, 0);
 
@@ -1099,10 +1106,10 @@ void Application::updateUniformBuffer(uint32_t currentImage) {
 
 /**********************************************************************/
 void Application::drawFrame() {
-    vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+    vkWaitForFences(device, 1, &inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
 
     uint32_t imageIndex;
-    VkResult result = vkAcquireNextImageKHR(device, m_swapChain->getSwapChain(), UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+    VkResult result = vkAcquireNextImageKHR(device, m_swapChain->getSwapChain(), UINT64_MAX, imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, &imageIndex);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         recreateSwapChain();
@@ -1112,30 +1119,33 @@ void Application::drawFrame() {
         throw std::runtime_error("failed to acquire swap chain image!");
     }
 
-    updateUniformBuffer(currentFrame);
+    // update the uniforms
+    updateUniformBuffer(m_currentFrame);
+    m_scene->updateUniformBuffer(m_currentFrame);
 
-    vkResetFences(device, 1, &inFlightFences[currentFrame]);
+    vkResetFences(device, 1, &inFlightFences[m_currentFrame]);
 
-    vkResetCommandBuffer(m_commandManager.getDrawingCommandBuffers()[currentFrame], /*VkCommandBufferResetFlagBits*/ 0);
-    recordCommandBuffer(m_commandManager.getDrawingCommandBuffers()[currentFrame], imageIndex);
+    m_scene->recordToCommandBuffers(m_currentFrame, imageIndex);
+    vkResetCommandBuffer(m_commandManager->getActiveDrawingCommand(), /*VkCommandBufferResetFlagBits*/ 0);
+    recordCommandBuffer(m_commandManager->getActiveDrawingCommand(), imageIndex);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
+    VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[m_currentFrame] };
     VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
     submitInfo.pWaitDstStageMask = waitStages;
 
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &m_commandManager.getDrawingCommandBuffers()[currentFrame];
+    submitInfo.pCommandBuffers = &m_commandManager->getDrawingCommandBuffers()[m_currentFrame];
 
-    VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[currentFrame] };
+    VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[m_currentFrame] };
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
+    if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[m_currentFrame]) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 
@@ -1161,7 +1171,7 @@ void Application::drawFrame() {
         throw std::runtime_error("failed to present swap chain image!");
     }
 
-    currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+    m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 /**********************************************************************/
@@ -1289,18 +1299,6 @@ bool Application::checkValidationLayerSupport() {
 }
 
 /**********************************************************************/
-VKAPI_ATTR VkBool32 VKAPI_CALL Application::debugCallback(
-    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, 
-    VkDebugUtilsMessageTypeFlagsEXT messageType, 
-    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, 
-    void* pUserData) {
-
-    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
-
-    return VK_FALSE;
-}
-
-/**********************************************************************/
 Application* Application::m_instance = nullptr;
 
 /**********************************************************************/
@@ -1321,14 +1319,16 @@ void Application::create() {
 /**********************************************************************/
 void Application::initialize() {
     _inputManager = std::make_unique<InputManager>();
-    _scene = std::make_unique<GameScene>();
+    m_scene = std::make_unique<GameScene>();
     _inputManager = std::make_unique<InputManager>();
     m_geoBuffer = std::make_unique<GeometryBuffer>();
     m_camera = std::make_unique<CameraFPS>();
     m_renderPass = std::make_unique<RenderPass>();
     m_swapChain = std::make_unique<SwapChain>();
+    m_commandManager = std::make_unique<CommandManager>();
 
-    init();
+    initWindow();
+    initVulkan();
     
     _performance = {};
 
@@ -1340,7 +1340,7 @@ void Application::initialize() {
 
     _inputManager->cursorShowing(false);
 
-    _scene->initialize();
+    m_scene->initialize();
 
     // initialize the time
     lastTime = std::chrono::high_resolution_clock::now();
@@ -1359,6 +1359,11 @@ std::unique_ptr<InputManager>& Application::getInputManager()  {
 /**********************************************************************/
 uint16_t  Application::maxFramesInFlight() const {
     return MAX_FRAMES_IN_FLIGHT;
+}
+
+/**********************************************************************/
+uint16_t Application::getCurrentFrame() const {
+    return m_currentFrame;
 }
 
 /**********************************************************************/
@@ -1396,7 +1401,6 @@ void Application::createBuffer(VkDeviceSize size,
 /**********************************************************************/
 void Application::run() {
 
-
     // main loop
     while (!glfwWindowShouldClose(getWindow())) {
         _performance.preUpdate();
@@ -1406,18 +1410,26 @@ void Application::run() {
         float dt = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - lastTime).count();
         lastTime = currentTime;
 
+        // get input and windows events
         glfwPollEvents();
 
-        update(dt);
-
         // main scene update
-        _scene->update(dt);
+        m_scene->nonGraphicsUpdate(dt);
 
+        // do the graphics
+        drawFrame();
+
+        // performance
         _performance.update(dt);
     }
 
     vkDeviceWaitIdle(getDevice());
 
-    _scene->dispose();
+    m_scene->dispose();
     dispose();
+}
+
+/**********************************************************************/
+CommandManager& Application::getCommandManager() const {
+    return *m_commandManager;
 }

@@ -141,6 +141,7 @@
     <ClCompile Include="core\InputManager.cpp" />
     <ClCompile Include="core\GeometryBuffer.cpp" />
     <ClCompile Include="core\DeviceImage.cpp" />
+    <ClCompile Include="meshes\CubeMesh.cpp" />
     <ClCompile Include="systems\FontManager.cpp" />
     <ClCompile Include="geometry\PlaneGeo.cpp" />
     <ClCompile Include="pipelines\ImagePipeline.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="core\IScene.h" />
     <ClInclude Include="core\GeometryBuffer.h" />
     <ClInclude Include="core\DeviceImage.h" />
+    <ClInclude Include="meshes\CubeMesh.h" />
     <ClInclude Include="systems\FontManager.h" />
     <ClInclude Include="geometry\PlaneGeo.h" />
     <ClInclude Include="geometry\VertexTypes.h" />

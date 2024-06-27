@@ -91,3 +91,9 @@ void CommandManager::createCommandBuffers() {
 const std::vector<VkCommandBuffer>& CommandManager::getDrawingCommandBuffers() const {
     return m_commandBuffers;
 }
+
+/**********************************************************************/
+VkCommandBuffer CommandManager::getActiveDrawingCommand() const {
+    const Application& app = Application::get();
+    return m_commandBuffers[app.getCurrentFrame()];
+}
