@@ -259,13 +259,53 @@ void Application::cleanup() {
 void Application::createGeometryBuffer() {
     std::vector< VertexTextureColor> verts;
     std::vector<uint16_t> indices;
-    PlaneGeo::buildPlan(verts, indices);
 
-    glm::mat4 transform = glm::scale(glm::mat4(1), glm::vec3(10));
-    transform = glm::rotate(transform, glm::radians(45.0f), glm::vec3(1, 0, 0));
-    transform = glm::translate(transform, glm::vec3(0, 0, 0));
-    PlaneGeo::applyTransform(verts, transform);
+    float scale = 1;
+    float floorOffset = 3;
+    glm::mat4 transform;
 
+    // ground
+    transform = glm::rotate(glm::mat4(1), glm::radians(90.0f), glm::vec3(1, 0, 0));
+    transform = glm::scale(transform, glm::vec3(50));
+    transform[3] = glm::vec4(0, -5, 0, 1);
+    PlaneGeo::buildPlan(verts, indices, transform);
+
+    // front
+    transform = glm::rotate(glm::mat4(1), glm::radians(0.0f), glm::vec3(1, 0, 0));
+    transform = glm::scale(transform, glm::vec3(scale));
+    transform[3] = glm::vec4(0, floorOffset, scale, 1);
+    PlaneGeo::buildPlan(verts, indices, transform);
+    
+    // back
+    transform = glm::rotate(glm::mat4(1), glm::radians(180.0f), glm::vec3(1, 0, 0));
+    transform = glm::scale(transform, glm::vec3(scale));
+    transform[3] = glm::vec4(0, floorOffset, -scale, 1);
+    PlaneGeo::buildPlan(verts, indices, transform);
+
+    // right
+    transform = glm::rotate(glm::mat4(1), glm::radians(-90.0f), glm::vec3(0, 1, 0));
+    transform = glm::scale(transform, glm::vec3(scale));
+    transform[3] = glm::vec4(scale, floorOffset, 0, 1);
+    PlaneGeo::buildPlan(verts, indices, transform);
+
+    // left
+    transform = glm::rotate(glm::mat4(1), glm::radians(90.0f), glm::vec3(0, 1, 0));
+    transform = glm::scale(transform, glm::vec3(scale));
+    transform[3] = glm::vec4(-scale, floorOffset, 0, 1);
+    PlaneGeo::buildPlan(verts, indices, transform);
+
+    // top
+    transform = glm::rotate(glm::mat4(1), glm::radians(90.0f), glm::vec3(1, 0, 0));
+    transform = glm::scale(transform, glm::vec3(scale));
+    transform[3] = glm::vec4(0, floorOffset + scale, 0, 1);
+    PlaneGeo::buildPlan(verts, indices, transform);
+
+    // bottom
+    transform = glm::rotate(glm::mat4(1), glm::radians(-90.0f), glm::vec3(1, 0, 0));
+    transform = glm::scale(transform, glm::vec3(scale));
+    transform[3] = glm::vec4(0, floorOffset - scale, 0, 1);
+    PlaneGeo::buildPlan(verts, indices, transform);
+    
     m_geoBuffer->createBuffers<VertexTextureColor>(verts, indices);
 }
 

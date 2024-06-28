@@ -15,9 +15,13 @@ private:
 
 	}
 public:
+    /**
+    * The plane is create on the x,z plane center at (0,0). It's square from [-1,1] on the x and z axis.
+    * Normal is positive z.
+    */
+	static void buildPlan(std::vector<VertexTextureColor>& vertices, std::vector<uint16_t>& indices, const glm::mat4& transform) {
 
-	static void buildPlan(std::vector<VertexTextureColor>& vertices, std::vector<uint16_t>& indices) {
-
+        uint32_t offset = vertices.size();
         float d = 0;
         float s = 1.0;
         VertexTextureColor v0{};
@@ -44,17 +48,23 @@ public:
         v3.color = { 1.0f, 1.0f, 1.0f };
         vertices.push_back(v3);
 
-        indices.push_back(0);
-        indices.push_back(1);
-        indices.push_back(3);
+        // apply the transfrom to the last 4
+        applyTransform(vertices, transform, vertices.size() - 4);
 
-        indices.push_back(1);
-        indices.push_back(2);
-        indices.push_back(3);
+        indices.push_back(offset + 0);
+        indices.push_back(offset + 1);
+        indices.push_back(offset + 3);
+
+        indices.push_back(offset + 1);
+        indices.push_back(offset + 2);
+        indices.push_back(offset + 3);
 	}
 
-	static void applyTransform(std::vector<VertexTextureColor>& vertex, const glm::mat4& transform) {
-		for(int i =0; i < vertex.size(); i++) {
+	static void applyTransform(std::vector<VertexTextureColor>& vertex, const glm::mat4& transform, uint32_t startIndex = 0) {
+        if (transform == glm::mat4(1)) {
+            return;
+        }
+		for(int i = startIndex; i < vertex.size(); i++) {
             VertexTextureColor& v = vertex[i];
 			glm::vec4 pos(v.pos, 1);
             v.pos = pos * transform;
