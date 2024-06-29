@@ -1,9 +1,10 @@
 #pragma once
 
-#include<vector>
-#include "VertexTypes.h"
+#include <vector>
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
+#include "VertexTypes.h"
+#include "geometry/GeoUtilities.h"
 
 /**
 * Utilitiy class used to build a plane and add it to 
@@ -21,7 +22,7 @@ public:
     */
 	static void buildPlan(std::vector<VertexTextureColor>& vertices, std::vector<uint16_t>& indices, const glm::mat4& transform) {
 
-        uint32_t offset = vertices.size();
+        uint32_t offset = (uint32_t) vertices.size();
         float d = 0;
         float s = 1.0;
         VertexTextureColor v0{};
@@ -49,7 +50,7 @@ public:
         vertices.push_back(v3);
 
         // apply the transfrom to the last 4
-        applyTransform(vertices, transform, vertices.size() - 4);
+        GeoUtilities::applyTransform(vertices, transform, vertices.size() - 4);
 
         indices.push_back(offset + 0);
         indices.push_back(offset + 1);
@@ -58,20 +59,6 @@ public:
         indices.push_back(offset + 1);
         indices.push_back(offset + 2);
         indices.push_back(offset + 3);
-	}
-
-	static void applyTransform(std::vector<VertexTextureColor>& vertex, const glm::mat4& transform, uint32_t startIndex = 0) {
-        if (transform == glm::mat4(1)) {
-            return;
-        }
-		for(int i = startIndex; i < vertex.size(); i++) {
-            VertexTextureColor& v = vertex[i];
-			glm::vec4 pos(v.pos, 1);
-            v.pos = pos * transform;
-            v.pos.x += transform[3].x;
-            v.pos.y += transform[3].y;
-            v.pos.z += transform[3].z;
-		}
 	}
 
 };

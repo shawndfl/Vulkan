@@ -72,7 +72,12 @@ void Texture::initialize(const std::string& filename) {
     // bind the memory to the image buffer
     vkBindImageMemory(app.getDevice(), textureImage, textureImageMemory, 0);
 
-    transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
+    transitionImageLayout(textureImage, 
+        VK_FORMAT_R8G8B8A8_SRGB, 
+        VK_IMAGE_LAYOUT_UNDEFINED, 
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+        mipLevels);
+
     copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
     //transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmaps
 
@@ -82,9 +87,11 @@ void Texture::initialize(const std::string& filename) {
     generateMipmaps(textureImage, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, mipLevels);
 
     textureImageView = createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, mipLevels);
+
+    createTextureSampler();
 }
 
-
+/**********************************************************************/
 void Texture::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels) {
     Application& app = Application::get();
 
@@ -252,6 +259,18 @@ void Texture::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, 
 }
 
 /**********************************************************************/
+void Texture::dispose() {
+    const Application& app = Application::get();
+    const VkDevice device = app.getDevice();
+
+    vkDestroySampler(device, textureSampler, nullptr);
+    vkDestroyImageView(device, textureImageView, nullptr);
+
+    vkDestroyImage(device, textureImage, nullptr);
+    vkFreeMemory(device, textureImageMemory, nullptr);
+}
+
+/**********************************************************************/
 void Texture::createTextureSampler() {
     const Application& app = Application::get();
 
@@ -260,8 +279,8 @@ void Texture::createTextureSampler() {
 
     VkSamplerCreateInfo samplerInfo{};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerInfo.magFilter = VK_FILTER_LINEAR;
-    samplerInfo.minFilter = VK_FILTER_LINEAR;
+    samplerInfo.magFilter = VK_FILTER_NEAREST;
+    samplerInfo.minFilter = VK_FILTER_NEAREST;
     samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
     samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
     samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
@@ -329,4 +348,14 @@ VkImageView Texture::createImageView(VkImage image, VkFormat format, VkImageAspe
     }
 
     return imageView;
+}
+
+/**********************************************************************/
+VkImageView Texture::getTextureImageView() const {
+    return textureImageView;
+}
+
+/**********************************************************************/
+VkSampler Texture::getTextureSampler() const {
+    return textureSampler;
 }

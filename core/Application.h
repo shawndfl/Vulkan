@@ -15,6 +15,7 @@
 #include "core/CommandManager.h"
 #include "renderPasses/RenderPass.h"
 #include "cameras/CameraFPS.h"
+#include "core/Texture.h"
 
 struct QueueFamilyIndices {
 	std::optional<uint32_t> graphicsFamily;
@@ -151,12 +152,7 @@ private:
 
     void createTextureImage();
 
-    void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
-
     VkSampleCountFlagBits getMaxUsableSampleCount();
-
-    void createTextureImageView();
-    void createTextureSampler();
 
     void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
 
@@ -218,6 +214,7 @@ private:
     std::unique_ptr<SwapChain> m_swapChain;
     std::unique_ptr<IScene> m_scene;
     std::unique_ptr<CommandManager> m_commandManager;
+    std::unique_ptr<Texture> m_texture;
 
     struct Performance _performance;
 
@@ -239,12 +236,6 @@ private:
     VkDescriptorSetLayout descriptorSetLayout;
     VkPipelineLayout pipelineLayout;
     VkPipeline graphicsPipeline;
-
-    uint32_t mipLevels;
-    VkImage textureImage;
-    VkDeviceMemory textureImageMemory;
-    VkImageView textureImageView;
-    VkSampler textureSampler;
 
     std::vector<VkBuffer> uniformBuffers;
     std::vector<VkDeviceMemory> uniformBuffersMemory;

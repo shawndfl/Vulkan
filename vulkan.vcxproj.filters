@@ -57,9 +57,6 @@
     <ClCompile Include="cameras\CameraFPS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pipelines\ImagePipeline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="cameras\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -79,6 +76,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="meshes\CubeMesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="geometry\BoxGeo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="geometry\GeoUtilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -131,9 +134,6 @@
     <ClInclude Include="cameras\CameraFPS.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="pipelines\ImagePipeline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="cameras\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -156,6 +156,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="meshes\CubeMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="geometry\BoxGeo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="geometry\GeoUtilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

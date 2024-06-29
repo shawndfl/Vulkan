@@ -1,8 +1,9 @@
 #pragma once
 #include <vulkan/vulkan.h>
 #include <string>
+#include "IDisposable.h"
 
-class Texture {
+class Texture: public IDisposable {
 private: 
 	VkImageView textureImageView;
 	VkSampler textureSampler;
@@ -17,12 +18,10 @@ private:
 	
 public:
 	void initialize(const std::string& filename);
-	VkImageView getTextureImageView() const {
-		return textureImageView;
-	}
-	VkSampler getTextureSampler() const {
-		return textureSampler;
-	}
+	VkImageView getTextureImageView() const;
+	VkSampler getTextureSampler() const;
+
+	void dispose();
 
 private:
 	void createTextureSampler();
