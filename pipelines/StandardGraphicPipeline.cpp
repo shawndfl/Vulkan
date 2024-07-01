@@ -9,28 +9,16 @@ const char* VertShaderCodePath = "./shaders/main.vert.spv";
 const char* FragShaderCodePath = "./shaders/main.frag.spv";
 
 /**********************************************************************/
-StandardGraphicPipeline::StandardGraphicPipeline(const StandardGraphicPipelineData& data) {
-    initialize(data);
+StandardGraphicPipeline::StandardGraphicPipeline() {
+    
 }
 
-/**********************************************************************/
-VkShaderModule StandardGraphicPipeline::createShaderModule(const std::vector<char>& code) {
-    VkShaderModuleCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.codeSize = code.size();
-    createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-
-    VkShaderModule shaderModule;
-    if (vkCreateShaderModule(Application::get().getDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-        LOGE("failed to create shader module!");
-    }
-
-    return shaderModule;
-}
 
 /**********************************************************************/
 void StandardGraphicPipeline::initialize(const struct StandardGraphicPipelineData& data) {
-    
+    const Application& app = Application::get();
+    auto device = app.getDevice();
+
     createDescriptorSetLayout();
 
     auto vertShaderCode = Assets::readFile(VertShaderCodePath);
@@ -127,7 +115,7 @@ void StandardGraphicPipeline::initialize(const struct StandardGraphicPipelineDat
     pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
 
     if (vkCreatePipelineLayout(Application::get().getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
-       LOGE("failed to create pipeline layout!");
+        LOGE("failed to create pipeline layout!");
     }
 
     VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -146,17 +134,40 @@ void StandardGraphicPipeline::initialize(const struct StandardGraphicPipelineDat
     pipelineInfo.renderPass = Application::get().getRenderPass();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-    auto device = Application::get().getDevice();
 
     if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
-       LOGE("failed to create graphics pipeline!");
+        LOGE("failed to create graphics pipeline!");
     }
 
     vkDestroyShaderModule(device, fragShaderModule, nullptr);
     vkDestroyShaderModule(device, vertShaderModule, nullptr);
-    
+
     // setup uniforms
     createDescriptorSets();
+}
+
+/**********************************************************************/
+void StandardGraphicPipeline::dispose() {
+    const Application& app = Application::get();
+    auto device = app.getDevice();
+
+    vkDestroyPipeline(device, graphicsPipeline, nullptr);
+    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+}
+
+/**********************************************************************/
+VkShaderModule StandardGraphicPipeline::createShaderModule(const std::vector<char>& code) {
+    VkShaderModuleCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    createInfo.codeSize = code.size();
+    createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+
+    VkShaderModule shaderModule;
+    if (vkCreateShaderModule(Application::get().getDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+        LOGE("failed to create shader module!");
+    }
+
+    return shaderModule;
 }
 
 /**********************************************************************/

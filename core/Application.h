@@ -17,6 +17,8 @@
 #include "cameras/CameraFPS.h"
 #include "core/Texture.h"
 
+class StandardGraphicPipeline;
+
 struct QueueFamilyIndices {
 	std::optional<uint32_t> graphicsFamily;
 	std::optional<uint32_t> presentFamily;
@@ -215,6 +217,7 @@ private:
     std::unique_ptr<IScene> m_scene;
     std::unique_ptr<CommandManager> m_commandManager;
     std::unique_ptr<Texture> m_texture;
+    std::unique_ptr<StandardGraphicPipeline> m_standardPipeline;
 
     struct Performance _performance;
 

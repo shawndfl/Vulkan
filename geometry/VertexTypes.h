@@ -4,6 +4,11 @@
 #include <vulkan/vulkan.h>
 #include <array>
 
+class VertexData {
+    glm::vec3 pos;
+    
+};
+
 struct VertexTextureColor {
     glm::vec3 pos;
     glm::vec3 color;

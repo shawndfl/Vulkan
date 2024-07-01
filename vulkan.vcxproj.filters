@@ -84,6 +84,12 @@
     <ClCompile Include="geometry\GeoUtilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="meshes\PlanMesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="descriptorSets\StandartDescriptorSet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="utilities\Log.h">
@@ -162,6 +168,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="geometry\GeoUtilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\PlanMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="descriptorSets\StandartDescriptorSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

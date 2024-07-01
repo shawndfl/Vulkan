@@ -20,7 +20,7 @@ public:
     * The plane is create on the x,z plane center at (0,0). It's square from [-1,1] on the x and z axis.
     * Normal is positive z.
     */
-	static void buildPlan(std::vector<VertexTextureColor>& vertices, std::vector<uint16_t>& indices, const glm::mat4& transform) {
+	static void buildPlan(std::vector<VertexTextureColor>& vertices, std::vector<uint16_t>& indices, const glm::mat4& transform, const glm::mat3& uvTransfrom) {
 
         uint32_t offset = (uint32_t) vertices.size();
         float d = 0;
@@ -51,6 +51,7 @@ public:
 
         // apply the transfrom to the last 4
         GeoUtilities::applyTransform(vertices, transform, vertices.size() - 4);
+        GeoUtilities::applyTransformUvs(vertices, uvTransfrom, vertices.size() - 4);
 
         indices.push_back(offset + 0);
         indices.push_back(offset + 1);

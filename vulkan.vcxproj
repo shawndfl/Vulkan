@@ -144,6 +144,8 @@
     <ClCompile Include="core\DeviceImage.cpp" />
     <ClCompile Include="geometry\GeoUtilities.cpp" />
     <ClCompile Include="meshes\CubeMesh.cpp" />
+    <ClCompile Include="meshes\PlanMesh.cpp" />
+    <ClCompile Include="descriptorSets\StandartDescriptorSet.cpp" />
     <ClCompile Include="systems\FontManager.cpp" />
     <ClCompile Include="geometry\PlaneGeo.cpp" />
     <ClCompile Include="scenes\GameScene.cpp" />
@@ -173,6 +175,8 @@
     <ClInclude Include="core\DeviceImage.h" />
     <ClInclude Include="geometry\GeoUtilities.h" />
     <ClInclude Include="meshes\CubeMesh.h" />
+    <ClInclude Include="meshes\PlanMesh.h" />
+    <ClInclude Include="descriptorSets\StandartDescriptorSet.h" />
     <ClInclude Include="systems\FontManager.h" />
     <ClInclude Include="geometry\PlaneGeo.h" />
     <ClInclude Include="geometry\VertexTypes.h" />

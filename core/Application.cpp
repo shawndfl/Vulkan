@@ -36,12 +36,13 @@
 #include "renderPasses/RenderPass.h"
 #include "utilities/Log.h"
 #include "systems/FontManager.h"
+#include "pipelines/StandardGraphicPipeline.h"
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
 
 const std::string MODEL_PATH = "./assets/viking_room.obj";
-const std::string TEXTURE_PATH = "./assets/viking_room.png";
+const std::string TEXTURE_PATH = "./assets/tiles.png";
 
 /**
 * Duble buffering
@@ -213,6 +214,8 @@ void Application::mainLoop() {
 void Application::cleanup() {
     m_swapChain->dispose();
 
+    m_standardPipeline->dispose();
+
     vkDestroyPipeline(device, graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
     m_renderPass->dispose();
@@ -260,47 +263,53 @@ void Application::createGeometryBuffer() {
     float floorOffset = 3;
     glm::mat4 transform;
 
+    glm::mat3 uvTransform = glm::rotate(glm::mat4(1), glm::radians(0.0f), glm::vec3(0.0f, 0.f, 1.f));
+    uvTransform[0].x *= 1.f /120.f;
+    uvTransform[1].y *= 1.f/ 60.f;
+    uvTransform[2] = glm::vec3(0, 0, 1);
+
+
     // ground
     transform = glm::rotate(glm::mat4(1), glm::radians(90.0f), glm::vec3(1, 0, 0));
     transform = glm::scale(transform, glm::vec3(50));
     transform[3] = glm::vec4(0, -5, 0, 1);
-    PlaneGeo::buildPlan(verts, indices, transform);
+    PlaneGeo::buildPlan(verts, indices, transform, uvTransform);
 
     // front
     transform = glm::rotate(glm::mat4(1), glm::radians(0.0f), glm::vec3(1, 0, 0));
     transform = glm::scale(transform, glm::vec3(scale));
     transform[3] = glm::vec4(0, floorOffset, scale, 1);
-    PlaneGeo::buildPlan(verts, indices, transform);
+    PlaneGeo::buildPlan(verts, indices, transform, uvTransform);
     
     // back
     transform = glm::rotate(glm::mat4(1), glm::radians(180.0f), glm::vec3(1, 0, 0));
     transform = glm::scale(transform, glm::vec3(scale));
     transform[3] = glm::vec4(0, floorOffset, -scale, 1);
-    PlaneGeo::buildPlan(verts, indices, transform);
+    PlaneGeo::buildPlan(verts, indices, transform, uvTransform);
 
     // right
     transform = glm::rotate(glm::mat4(1), glm::radians(-90.0f), glm::vec3(0, 1, 0));
     transform = glm::scale(transform, glm::vec3(scale));
     transform[3] = glm::vec4(scale, floorOffset, 0, 1);
-    PlaneGeo::buildPlan(verts, indices, transform);
+    PlaneGeo::buildPlan(verts, indices, transform, uvTransform);
 
     // left
     transform = glm::rotate(glm::mat4(1), glm::radians(90.0f), glm::vec3(0, 1, 0));
     transform = glm::scale(transform, glm::vec3(scale));
     transform[3] = glm::vec4(-scale, floorOffset, 0, 1);
-    PlaneGeo::buildPlan(verts, indices, transform);
+    PlaneGeo::buildPlan(verts, indices, transform, uvTransform);
 
     // top
     transform = glm::rotate(glm::mat4(1), glm::radians(90.0f), glm::vec3(1, 0, 0));
     transform = glm::scale(transform, glm::vec3(scale));
     transform[3] = glm::vec4(0, floorOffset + scale, 0, 1);
-    PlaneGeo::buildPlan(verts, indices, transform);
+    PlaneGeo::buildPlan(verts, indices, transform, uvTransform);
 
     // bottom
     transform = glm::rotate(glm::mat4(1), glm::radians(-90.0f), glm::vec3(1, 0, 0));
     transform = glm::scale(transform, glm::vec3(scale));
     transform[3] = glm::vec4(0, floorOffset - scale, 0, 1);
-    PlaneGeo::buildPlan(verts, indices, transform);
+    PlaneGeo::buildPlan(verts, indices, transform, uvTransform);
     
     m_geoBuffer->createBuffers<VertexTextureColor>(verts, indices);
 }
@@ -497,6 +506,9 @@ void Application::createDescriptorSetLayout() {
 }
 
 void Application::createGraphicsPipeline() {
+    //StandardGraphicPipelineData data;
+    //m_standardPipeline->initialize(data);
+
     auto vertShaderCode = Assets::readFile("./shaders/main.vert.spv");
     auto fragShaderCode = Assets::readFile("./shaders/main.frag.spv");
 
@@ -1213,6 +1225,7 @@ void Application::initialize() {
     m_swapChain = std::make_unique<SwapChain>();
     m_commandManager = std::make_unique<CommandManager>();
     m_texture = std::make_unique<Texture>();
+    m_standardPipeline = std::make_unique<StandardGraphicPipeline>();
 
     initWindow();
     initVulkan();
