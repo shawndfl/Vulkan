@@ -90,6 +90,9 @@
     <ClCompile Include="descriptorSets\StandartDescriptorSet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="descriptorSets\DescriptorPoolManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="utilities\Log.h">
@@ -174,6 +177,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="descriptorSets\StandartDescriptorSet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="descriptorSets\DescriptorPoolManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

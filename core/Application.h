@@ -18,6 +18,7 @@
 #include "core/Texture.h"
 
 class StandardGraphicPipeline;
+class DescriptorPoolManager;
 
 struct QueueFamilyIndices {
 	std::optional<uint32_t> graphicsFamily;
@@ -218,6 +219,7 @@ private:
     std::unique_ptr<CommandManager> m_commandManager;
     std::unique_ptr<Texture> m_texture;
     std::unique_ptr<StandardGraphicPipeline> m_standardPipeline;
+    std::unique_ptr<DescriptorPoolManager> m_descriptorPool;
 
     struct Performance _performance;
 
@@ -236,7 +238,6 @@ private:
     VkQueue graphicsQueue;
     VkQueue presentQueue;
 
-    VkDescriptorSetLayout descriptorSetLayout;
     VkPipelineLayout pipelineLayout;
     VkPipeline graphicsPipeline;
 
@@ -245,8 +246,6 @@ private:
     std::vector<void*> uniformBuffersMapped;
 
     VkDescriptorPool descriptorPool;
-    std::vector<VkDescriptorSet> descriptorSets;
-
 
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;
