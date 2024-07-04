@@ -238,14 +238,9 @@ private:
     VkQueue graphicsQueue;
     VkQueue presentQueue;
 
-    VkPipelineLayout pipelineLayout;
-    VkPipeline graphicsPipeline;
-
     std::vector<VkBuffer> uniformBuffers;
     std::vector<VkDeviceMemory> uniformBuffersMemory;
     std::vector<void*> uniformBuffersMapped;
-
-    VkDescriptorPool descriptorPool;
 
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;

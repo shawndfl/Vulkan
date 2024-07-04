@@ -17,10 +17,12 @@ public:
 	const std::vector<VkCommandBuffer>& getDrawingCommandBuffers() const;
 
 	VkCommandBuffer getActiveDrawingCommand() const;
+	VkCommandBuffer getActiveUiCommand() const;
 
 private:
 	VkCommandPool m_commandPool;
 
 	std::vector<VkCommandBuffer> m_commandBuffers;
+	std::vector<VkCommandBuffer> m_uiCommandBuffers;
 };
 

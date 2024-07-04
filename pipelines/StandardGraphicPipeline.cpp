@@ -3,6 +3,8 @@
 #include "utilities/Assets.h"
 #include "utilities/Log.h"
 #include "geometry/VertexTypes.h"
+#include "core/Application.h"
+#include "renderPasses/RenderPass.h"
 
 
 const char* VertShaderCodePath = "./shaders/main.vert.spv";
@@ -15,11 +17,9 @@ StandardGraphicPipeline::StandardGraphicPipeline() {
 
 
 /**********************************************************************/
-void StandardGraphicPipeline::initialize(const struct StandardGraphicPipelineData& data) {
+void StandardGraphicPipeline::initialize( VkDescriptorSetLayout* descriptorSetLayout, const RenderPass& renderPass) {
     const Application& app = Application::get();
     auto device = app.getDevice();
-
-    createDescriptorSetLayout();
 
     auto vertShaderCode = Assets::readFile(VertShaderCodePath);
     auto fragShaderCode = Assets::readFile(FragShaderCodePath);
@@ -69,13 +69,13 @@ void StandardGraphicPipeline::initialize(const struct StandardGraphicPipelineDat
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizer.lineWidth = 1.0f;
     rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-    rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
     rasterizer.depthBiasEnable = VK_FALSE;
 
     VkPipelineMultisampleStateCreateInfo multisampling{};
     multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampling.sampleShadingEnable = VK_FALSE;
-    multisampling.rasterizationSamples = msaaSamples;
+    multisampling.rasterizationSamples = app.getmMsaaSamples();
 
     VkPipelineDepthStencilStateCreateInfo depthStencil{};
     depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -112,10 +112,10 @@ void StandardGraphicPipeline::initialize(const struct StandardGraphicPipelineDat
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = 1;
-    pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
+    pipelineLayoutInfo.pSetLayouts = descriptorSetLayout;
 
-    if (vkCreatePipelineLayout(Application::get().getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
-        LOGE("failed to create pipeline layout!");
+    if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create pipeline layout!");
     }
 
     VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -131,19 +131,26 @@ void StandardGraphicPipeline::initialize(const struct StandardGraphicPipelineDat
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
     pipelineInfo.layout = pipelineLayout;
-    pipelineInfo.renderPass = Application::get().getRenderPass();
+    pipelineInfo.renderPass = renderPass.getRenderPass();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
     if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
-        LOGE("failed to create graphics pipeline!");
+        throw std::runtime_error("failed to create graphics pipeline!");
     }
 
     vkDestroyShaderModule(device, fragShaderModule, nullptr);
     vkDestroyShaderModule(device, vertShaderModule, nullptr);
+}
 
-    // setup uniforms
-    createDescriptorSets();
+/**********************************************************************/
+VkPipeline StandardGraphicPipeline::getPipeline() const {
+    return graphicsPipeline;
+}
+
+/**********************************************************************/
+VkPipelineLayout StandardGraphicPipeline::getPipelineLayout() const {
+    return pipelineLayout;
 }
 
 /**********************************************************************/
@@ -168,111 +175,6 @@ VkShaderModule StandardGraphicPipeline::createShaderModule(const std::vector<cha
     }
 
     return shaderModule;
-}
-
-/**********************************************************************/
-void StandardGraphicPipeline::createDescriptorSetLayout() {
-    VkDescriptorSetLayoutBinding uboLayoutBinding{};
-    uboLayoutBinding.binding = 0;
-    uboLayoutBinding.descriptorCount = 1;
-    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    uboLayoutBinding.pImmutableSamplers = nullptr;
-    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-    samplerLayoutBinding.binding = 1;
-    samplerLayoutBinding.descriptorCount = 1;
-    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    samplerLayoutBinding.pImmutableSamplers = nullptr;
-    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-    std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
-    VkDescriptorSetLayoutCreateInfo layoutInfo{};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-    layoutInfo.pBindings = bindings.data();
-
-    auto device = Application::get().getDevice();
-    if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
-       LOGE("failed to create descriptor set layout!");
-    }
-}
-
-/**********************************************************************/
-void StandardGraphicPipeline::createDescriptorPool() {
-    const Application& app = Application::get();
-
-    std::array<VkDescriptorPoolSize, 2> poolSizes{};
-    // for WVP
-    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[0].descriptorCount = static_cast<uint32_t>(app.maxFramesInFlight());
-
-    // for texture
-    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = static_cast<uint32_t>(app.maxFramesInFlight());
-
-    VkDescriptorPoolCreateInfo poolInfo{};
-    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-    poolInfo.pPoolSizes = poolSizes.data();
-    poolInfo.maxSets = static_cast<uint32_t>(app.maxFramesInFlight());
-
-    if (vkCreateDescriptorPool(app.getDevice(), &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
-       LOGE("failed to create descriptor pool!");
-    }
-}
-
-/**********************************************************************/
-void StandardGraphicPipeline::createDescriptorSets() {
-    const Application& app = Application::get();
-
-    // allocate memory for the uniforms
-    createDescriptorPool();
-
-    std::vector<VkDescriptorSetLayout> layouts(app.maxFramesInFlight(), descriptorSetLayout);
-    VkDescriptorSetAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = descriptorPool;
-    allocInfo.descriptorSetCount = static_cast<uint32_t>(app.maxFramesInFlight());
-    allocInfo.pSetLayouts = layouts.data();
-
-    descriptorSets.resize(app.maxFramesInFlight());
-    if (vkAllocateDescriptorSets(app.getDevice(), &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
-       LOGE("failed to allocate descriptor sets!");
-    }
-
-    for (size_t i = 0; i < app.maxFramesInFlight(); i++) {
-        VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = uniformBuffers[i];
-        bufferInfo.offset = 0;
-        //TODO 
-        //bufferInfo.range = sizeof(UniformBufferObject);
-
-        VkDescriptorImageInfo imageInfo{};
-        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView = sampleTexture.getTextureImageView();
-        imageInfo.sampler = sampleTexture.getTextureSampler();
-
-        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
-
-        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[0].dstSet = descriptorSets[i];
-        descriptorWrites[0].dstBinding = 0;
-        descriptorWrites[0].dstArrayElement = 0;
-        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptorWrites[0].descriptorCount = 1;
-        descriptorWrites[0].pBufferInfo = &bufferInfo;
-
-        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[1].dstSet = descriptorSets[i];
-        descriptorWrites[1].dstBinding = 1;
-        descriptorWrites[1].dstArrayElement = 0;
-        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptorWrites[1].descriptorCount = 1;
-        descriptorWrites[1].pImageInfo = &imageInfo;
-
-        vkUpdateDescriptorSets(app.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-    }
 }
 
 /**********************************************************************/
