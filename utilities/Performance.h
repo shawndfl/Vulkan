@@ -21,14 +21,14 @@ struct Performance {
 	void preUpdate() {
 		drawCalls = 0;
 	}
-
+	  
 	void update(float dt) {
 		time += dt;
 		frameCount++;
 
 		if (time > 3) {
-			fps = time / (float)frameCount;
-			LOGI("FPS " << fps << " frames " << frameCount << " draw calls " << drawCalls);
+			fps = frameCount /(float) time;
+			LOGI("FPS " << fps << " frames " << frameCount << " dt " << dt);
 			time = 0;
 			frameCount = 0;
 		}

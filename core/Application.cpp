@@ -30,8 +30,11 @@
 
 #include "scenes/GameScene.h"
 #include "utilities/Assets.h"
+
 #include "geometry/VertexTypes.h"
 #include "geometry/PlaneGeo.h"
+#include "geometry/BoxGeo.h"
+
 #include "cameras/CameraFPS.h"
 #include "renderPasses/RenderPass.h"
 #include "utilities/Log.h"
@@ -85,7 +88,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL Application::debugCallback(
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
     void* pUserData) {
 
-    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+    std::cout << "validation layer: " << pCallbackData->pMessage << std::endl;
 
     return VK_FALSE;
 }
@@ -259,57 +262,36 @@ void Application::createGeometryBuffer() {
     std::vector<uint16_t> indices;
 
     float scale = 1;
-    float floorOffset = 3;
+    int floor = -2;
     glm::mat4 transform;
 
-    glm::mat3 uvTransform = glm::rotate(glm::mat4(1), glm::radians(0.0f), glm::vec3(0.0f, 0.f, 1.f));
-    uvTransform[0].x *= 1.f /120.f;
-    uvTransform[1].y *= 1.f/ 60.f;
-    uvTransform[2] = glm::vec3(0, 0, 1);
-
-
     // ground
+    glm::mat3 uvTransform = glm::rotate(glm::mat4(1), glm::radians(0.0f), glm::vec3(0.0f, 0.f, 1.f));
+    uvTransform[0].x *= 1.f / 120.f;
+    uvTransform[1].y *= 1.f / 60.f;
+    uvTransform[2] = glm::vec3(0, 0, 1);
     transform = glm::rotate(glm::mat4(1), glm::radians(90.0f), glm::vec3(1, 0, 0));
     transform = glm::scale(transform, glm::vec3(50));
-    transform[3] = glm::vec4(0, -5, 0, 1);
-    PlaneGeo::buildPlan(verts, indices, transform, uvTransform);
+    transform[3] = glm::vec4(0, floor, 0, 1);
+    PlaneGeoData groundData{ transform, uvTransform };
+    PlaneGeo::buildPlan(verts, indices, groundData);
 
-    // front
-    transform = glm::rotate(glm::mat4(1), glm::radians(0.0f), glm::vec3(1, 0, 0));
-    transform = glm::scale(transform, glm::vec3(scale));
-    transform[3] = glm::vec4(0, floorOffset, scale, 1);
-    PlaneGeo::buildPlan(verts, indices, transform, uvTransform);
+    uvTransform = glm::rotate(glm::mat4(1), glm::radians(0.0f), glm::vec3(0.0f, 0.f, 1.f));
+    uvTransform[0].x *= 1.f / 120.f;
+    uvTransform[1].y *= 1.f / 60.f;
+    uvTransform[2] = glm::vec3(0, 0, 1);
+
     
-    // back
-    transform = glm::rotate(glm::mat4(1), glm::radians(180.0f), glm::vec3(1, 0, 0));
-    transform = glm::scale(transform, glm::vec3(scale));
-    transform[3] = glm::vec4(0, floorOffset, -scale, 1);
-    PlaneGeo::buildPlan(verts, indices, transform, uvTransform);
-
-    // right
-    transform = glm::rotate(glm::mat4(1), glm::radians(-90.0f), glm::vec3(0, 1, 0));
-    transform = glm::scale(transform, glm::vec3(scale));
-    transform[3] = glm::vec4(scale, floorOffset, 0, 1);
-    PlaneGeo::buildPlan(verts, indices, transform, uvTransform);
-
-    // left
-    transform = glm::rotate(glm::mat4(1), glm::radians(90.0f), glm::vec3(0, 1, 0));
-    transform = glm::scale(transform, glm::vec3(scale));
-    transform[3] = glm::vec4(-scale, floorOffset, 0, 1);
-    PlaneGeo::buildPlan(verts, indices, transform, uvTransform);
-
-    // top
-    transform = glm::rotate(glm::mat4(1), glm::radians(90.0f), glm::vec3(1, 0, 0));
-    transform = glm::scale(transform, glm::vec3(scale));
-    transform[3] = glm::vec4(0, floorOffset + scale, 0, 1);
-    PlaneGeo::buildPlan(verts, indices, transform, uvTransform);
-
-    // bottom
-    transform = glm::rotate(glm::mat4(1), glm::radians(-90.0f), glm::vec3(1, 0, 0));
-    transform = glm::scale(transform, glm::vec3(scale));
-    transform[3] = glm::vec4(0, floorOffset - scale, 0, 1);
-    PlaneGeo::buildPlan(verts, indices, transform, uvTransform);
-    
+    for (int i = 0; i < 100; i++) {
+        for (int j = 0; j < 100; j++) {
+            transform = glm::rotate(glm::mat4(1), glm::radians(0.0f), glm::vec3(1, 0, 0));
+            transform = glm::scale(transform, glm::vec3(1));
+            transform[3] = glm::vec4(i, floor, j, 1);
+            BoxGeoData cube1Data{ transform, uvTransform };
+            BoxGeo::buildBox(verts, indices, cube1Data);
+        }
+    }
+        
     m_geoBuffer->createBuffers<VertexTextureColor>(verts, indices);
 }
 
