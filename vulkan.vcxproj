@@ -135,18 +135,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="descriptorSets\DescriptorPoolManager.cpp" />
+    <ClCompile Include="cameras\CameraUi.cpp" />
+    <ClCompile Include="descriptorSets\DescriptorPool.cpp" />
     <ClCompile Include="geometry\BoxGeo.cpp" />
     <ClCompile Include="cameras\Camera.cpp" />
     <ClCompile Include="cameras\CameraFPS.cpp" />
     <ClCompile Include="core\CommandManager.cpp" />
     <ClCompile Include="core\InputManager.cpp" />
-    <ClCompile Include="core\GeometryBuffer.cpp" />
+    <ClCompile Include="core\MeshBuffer.cpp" />
     <ClCompile Include="core\DeviceImage.cpp" />
     <ClCompile Include="geometry\GeoUtilities.cpp" />
+    <ClCompile Include="ui\Label.cpp" />
     <ClCompile Include="meshes\CubeMesh.cpp" />
     <ClCompile Include="meshes\PlanMesh.cpp" />
-    <ClCompile Include="descriptorSets\StandartDescriptorSet.cpp" />
+    <ClCompile Include="descriptorSets\StandardDescriptorSet.cpp" />
     <ClCompile Include="systems\FontManager.cpp" />
     <ClCompile Include="geometry\PlaneGeo.cpp" />
     <ClCompile Include="scenes\GameScene.cpp" />
@@ -163,7 +165,9 @@
     <ClCompile Include="VulkanSmple.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="descriptorSets\DescriptorPoolManager.h" />
+    <ClInclude Include="cameras\CameraUi.h" />
+    <ClInclude Include="descriptorSets\DescriptorPool.h" />
+    <ClInclude Include="descriptorSets\UniformBufferObject.h" />
     <ClInclude Include="geometry\BoxGeo.h" />
     <ClInclude Include="cameras\Camera.h" />
     <ClInclude Include="cameras\CameraFPS.h" />
@@ -173,12 +177,13 @@
     <ClInclude Include="core\InputManager.h" />
     <ClInclude Include="core\IGraphicPipeline.h" />
     <ClInclude Include="core\IScene.h" />
-    <ClInclude Include="core\GeometryBuffer.h" />
+    <ClInclude Include="core\MeshBuffer.h" />
     <ClInclude Include="core\DeviceImage.h" />
     <ClInclude Include="geometry\GeoUtilities.h" />
+    <ClInclude Include="ui\Label.h" />
     <ClInclude Include="meshes\CubeMesh.h" />
     <ClInclude Include="meshes\PlanMesh.h" />
-    <ClInclude Include="descriptorSets\StandartDescriptorSet.h" />
+    <ClInclude Include="descriptorSets\StandardDescriptorSet.h" />
     <ClInclude Include="systems\FontManager.h" />
     <ClInclude Include="geometry\PlaneGeo.h" />
     <ClInclude Include="geometry\VertexTypes.h" />

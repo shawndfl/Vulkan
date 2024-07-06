@@ -51,7 +51,7 @@
     <ClCompile Include="VulkanSmple.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="core\GeometryBuffer.cpp">
+    <ClCompile Include="core\MeshBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="cameras\CameraFPS.cpp">
@@ -87,10 +87,16 @@
     <ClCompile Include="meshes\PlanMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="descriptorSets\StandartDescriptorSet.cpp">
+    <ClCompile Include="descriptorSets\StandardDescriptorSet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="descriptorSets\DescriptorPoolManager.cpp">
+    <ClCompile Include="descriptorSets\DescriptorPool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\Label.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cameras\CameraUi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -134,7 +140,7 @@
     <ClInclude Include="geometry\PlaneGeo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="core\GeometryBuffer.h">
+    <ClInclude Include="core\MeshBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="geometry\VertexTypes.h">
@@ -176,10 +182,19 @@
     <ClInclude Include="meshes\PlanMesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="descriptorSets\StandartDescriptorSet.h">
+    <ClInclude Include="descriptorSets\StandardDescriptorSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="descriptorSets\DescriptorPoolManager.h">
+    <ClInclude Include="descriptorSets\DescriptorPool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\Label.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cameras\CameraUi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="descriptorSets\UniformBufferObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

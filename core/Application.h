@@ -8,17 +8,19 @@
 
 #include "core/IScene.h"
 #include "utilities/Performance.h"
-#include "core/GeometryBuffer.h"
+#include "core/MeshBuffer.h"
 #include "core/InputManager.h"
 #include "core/SwapChain.h"
 #include "core/DeviceImage.h"
 #include "core/CommandManager.h"
 #include "renderPasses/RenderPass.h"
-#include "cameras/CameraFPS.h"
 #include "core/Texture.h"
 
 class StandardGraphicPipeline;
-class DescriptorPoolManager;
+class DescriptorPool;
+class StandardDescriptorSet;
+class CameraUi;
+class CameraFPS;
 
 struct QueueFamilyIndices {
 	std::optional<uint32_t> graphicsFamily;
@@ -107,6 +109,7 @@ public:
 
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) const;
 
+    void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 private:
     /**
     * Singletop use get()
@@ -167,8 +170,6 @@ private:
 
     void createDescriptorSets();
 
-    void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
     void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
@@ -211,15 +212,20 @@ private:
     static Application* m_instance;
 
     std::unique_ptr<InputManager> _inputManager;
-    std::unique_ptr<GeometryBuffer> m_geoBuffer;
+    std::unique_ptr<MeshBuffer> m_meshBuffer;
+    std::unique_ptr<MeshBuffer> m_uiMeshBuffer;
     std::unique_ptr<CameraFPS> m_camera;
+    std::unique_ptr<CameraUi> m_cameraUi;
     std::unique_ptr<RenderPass> m_renderPass;
     std::unique_ptr<SwapChain> m_swapChain;
     std::unique_ptr<IScene> m_scene;
     std::unique_ptr<CommandManager> m_commandManager;
     std::unique_ptr<Texture> m_texture;
     std::unique_ptr<StandardGraphicPipeline> m_standardPipeline;
-    std::unique_ptr<DescriptorPoolManager> m_descriptorPool;
+    std::unique_ptr<DescriptorPool> m_descriptorPool;
+    std::unique_ptr<StandardDescriptorSet> m_descriptorSceneSet;
+    std::unique_ptr<StandardDescriptorSet> m_descriptorUiSet;
+
 
     struct Performance _performance;
 
@@ -237,10 +243,6 @@ private:
 
     VkQueue graphicsQueue;
     VkQueue presentQueue;
-
-    std::vector<VkBuffer> uniformBuffers;
-    std::vector<VkDeviceMemory> uniformBuffersMemory;
-    std::vector<void*> uniformBuffersMapped;
 
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;

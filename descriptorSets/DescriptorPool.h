@@ -5,14 +5,13 @@
 
 class Texture;
 
-class DescriptorPoolManager : public IDisposable  {
+class DescriptorPool : public IDisposable  {
 public:
 	void createDescriptorPool();
-	void createDescriptorSets(const std::vector<VkBuffer>& uniformBuffers, const Texture& texture);
 
 	VkDescriptorPool getDescriptorPool() const;
-	VkDescriptorSetLayout* getDescriptorSetLayout();
-	const std::vector<VkDescriptorSet>& getdescriptorSets() const;
+	VkDescriptorSetLayout getDescriptorSetLayout() const;
+	VkDescriptorSetLayout* getDescriptorSetLayoutPtr();
 
 	void createDescriptorSetLayout();
 
@@ -21,6 +20,5 @@ private:
 
 	VkDescriptorPool m_descriptorPool;
 	VkDescriptorSetLayout m_descriptorSetLayout;
-	std::vector<VkDescriptorSet> m_descriptorSets;
 };
 

@@ -11,7 +11,8 @@ const float moveSpeed = .01f;
 void CameraFPS::initialize(float fov, float near, float far) {
 
     const Application& app = Application::get();
-
+    m_near = near;
+    m_far = far;
     glm::mat4 rotation = glm::rotate(glm::mat4(1), glm::radians(angles.x), glm::vec3(1, 0, 0));
     ubo.view = glm::lookAt(position, position + forward, up);
     ubo.proj = glm::perspective(glm::radians(fov), app.getWidth() / (float)app.getHeight(), near, far);

@@ -6,7 +6,7 @@
 * This class manages an index and vertex buffer. Remember to call dispose when you are
 * done with the buffers.
 */
-class GeometryBuffer {
+class MeshBuffer {
 
 private :
 	VkBuffer vertexBuffer;
@@ -27,13 +27,12 @@ public:
 private:
 	void createVertexBuffer(const void* vertexData, const int dataSize, size_t elementCount);
 	void createIndexBuffer(const void* indexData, const int dataSize, size_t elementCount);
-	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	
 };
 
 /**********************************************************************/
 template<class T>
-void GeometryBuffer::createBuffers(const std::vector<T>& vertexData, const std::vector<uint16_t>& indexData) {
+void MeshBuffer::createBuffers(const std::vector<T>& vertexData, const std::vector<uint16_t>& indexData) {
 	createVertexBuffer(vertexData.data(), sizeof(T), vertexData.size());
 	createIndexBuffer(indexData.data(), sizeof(unsigned short), indexData.size());
 }

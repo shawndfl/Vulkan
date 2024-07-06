@@ -36,11 +36,13 @@
 #include "geometry/BoxGeo.h"
 
 #include "cameras/CameraFPS.h"
+#include "cameras/CameraUi.h"
 #include "renderPasses/RenderPass.h"
 #include "utilities/Log.h"
 #include "systems/FontManager.h"
 #include "pipelines/StandardGraphicPipeline.h"
-#include "descriptorSets/DescriptorPoolManager.h"
+#include "descriptorSets/DescriptorPool.h"
+#include "descriptorSets/StandardDescriptorSet.h"
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -101,7 +103,7 @@ const std::vector<const char*> validationLayers = {
 };
 
 const std::vector<const char*> deviceExtensions = {
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 };
 
 #ifdef NDEBUG
@@ -223,16 +225,16 @@ void Application::cleanup() {
     m_standardPipeline->dispose();
     m_renderPass->dispose();
 
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        vkDestroyBuffer(device, uniformBuffers[i], nullptr);
-        vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
-    }
+    m_descriptorSceneSet->dispose();
+
+    //m_descriptorUiSet->dispose();
 
     m_descriptorPool->dispose();
 
     m_texture->dispose();
 
-    m_geoBuffer->dispose();
+    m_meshBuffer->dispose();
+    m_uiMeshBuffer->dispose();
         
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
@@ -280,7 +282,7 @@ void Application::createGeometryBuffer() {
     uvTransform[1].y *= 1.f / 60.f;
     uvTransform[2] = glm::vec3(0, 0, 1);
 
-    
+    // some boxes
     for (int i = 0; i < 100; i++) {
         for (int j = 0; j < 100; j++) {
             transform = glm::rotate(glm::mat4(1), glm::radians(0.0f), glm::vec3(1, 0, 0));
@@ -290,8 +292,22 @@ void Application::createGeometryBuffer() {
             BoxGeo::buildBox(verts, indices, cube1Data);
         }
     }
-        
-    m_geoBuffer->createBuffers<VertexTextureColor>(verts, indices);
+    m_meshBuffer->createBuffers<VertexTextureColor>(verts, indices);
+
+    // ui
+    std::vector< VertexTextureColor> verts2;
+    std::vector<uint16_t> indices2;
+    glm::mat3 uvTransform2 = glm::rotate(glm::mat4(1), glm::radians(0.0f), glm::vec3(0.0f, 0.f, 1.f));
+    uvTransform2[0].x *= 1.f / 120.f;
+    uvTransform2[1].y *= 1.f / 60.f;
+    uvTransform2[2] = glm::vec3(2.f/120.f, 0, 1);
+    transform = glm::rotate(glm::mat4(1), glm::radians(0.0f), glm::vec3(1, 0, 0));
+    transform = glm::scale(transform, glm::vec3(1));
+    transform[3] = glm::vec4(0, 0, .5, 1);
+    PlaneGeoData uiData{ transform, uvTransform2 };
+    PlaneGeo::buildPlan(verts2, indices2, uiData);
+
+    m_uiMeshBuffer->createBuffers<VertexTextureColor>(verts2, indices2);
 }
 
 void Application::recreateSwapChain() {
@@ -321,7 +337,7 @@ void Application::createInstance() {
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "No Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = VK_API_VERSION_1_0;
+    appInfo.apiVersion = VK_API_VERSION_1_3;
 
     VkInstanceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -449,6 +465,7 @@ void Application::createSwapChain() {
     m_swapChain->initialize();
     // initailze the camera now that we know the swapChainExtent
     m_camera->initialize();
+    m_cameraUi->initialize();
 }
 
 void Application::createFrameBuffer() {
@@ -465,7 +482,7 @@ void Application::createDescriptorSetLayout() {
 
 void Application::createGraphicsPipeline() {
     
-    m_standardPipeline->initialize(m_descriptorPool->getDescriptorSetLayout(), *m_renderPass);
+    m_standardPipeline->initialize(m_descriptorPool->getDescriptorSetLayoutPtr(), *m_renderPass);
 }
 
 void Application::createCommandPool() {
@@ -605,17 +622,8 @@ void Application::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t wid
 
 /**********************************************************************/
 void Application::createUniformBuffers() {
-    VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-
-    uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-    uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
-    uniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
-
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
-
-        vkMapMemory(device, uniformBuffersMemory[i], 0, bufferSize, 0, &uniformBuffersMapped[i]);
-    }
+    m_descriptorSceneSet->createUniformBuffers();
+    m_descriptorUiSet->createUniformBuffers();
 }
 
 /**********************************************************************/
@@ -625,7 +633,8 @@ void Application::createDescriptorPool() {
 
 /**********************************************************************/
 void Application::createDescriptorSets() {
-    m_descriptorPool->createDescriptorSets(uniformBuffers, *m_texture);
+    m_descriptorSceneSet->createDescriptorSets(*m_descriptorPool, *m_texture);
+    m_descriptorUiSet->createDescriptorSets(*m_descriptorPool, *m_texture);
 }
 
 /**********************************************************************/
@@ -731,23 +740,42 @@ void Application::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t im
     scissor.extent = m_swapChain->getExtend2D();
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    VkBuffer vertexBuffers[] = { m_geoBuffer->getVertexBuffer()};
+    //
+    // 3d environment
+    //
+    vkCmdSetDepthTestEnable(commandBuffer, true);
+    VkBuffer vertexBuffers[] = { m_meshBuffer->getVertexBuffer()};
     VkDeviceSize offsets[] = { 0 };
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-
-    vkCmdBindIndexBuffer(commandBuffer, m_geoBuffer->getIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
-
+    vkCmdBindIndexBuffer(commandBuffer, m_meshBuffer->getIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
     vkCmdBindDescriptorSets(
         commandBuffer, 
         VK_PIPELINE_BIND_POINT_GRAPHICS, 
         m_standardPipeline->getPipelineLayout(), 
         0, 
         1, 
-        &m_descriptorPool->getdescriptorSets()[m_currentFrame],
+        m_descriptorSceneSet->getDescriptorSet(m_currentFrame),
         0,
         nullptr);
+    vkCmdDrawIndexed(commandBuffer, m_meshBuffer->getIndexCount(), 1, 0, 0, 0);
 
-    vkCmdDrawIndexed(commandBuffer, m_geoBuffer->getIndexCount(), 1, 0, 0, 0);
+    //
+    // ui commands
+    //
+    vkCmdSetDepthTestEnable(commandBuffer, false);
+    VkBuffer vertexBuffersUi[] = { m_uiMeshBuffer->getVertexBuffer() };
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffersUi, offsets);
+    vkCmdBindIndexBuffer(commandBuffer, m_uiMeshBuffer->getIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
+    vkCmdBindDescriptorSets(
+        commandBuffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        m_standardPipeline->getPipelineLayout(),
+        0,
+        1,
+        m_descriptorUiSet->getDescriptorSet(m_currentFrame),
+        0,
+        nullptr);
+    vkCmdDrawIndexed(commandBuffer, m_uiMeshBuffer->getIndexCount(), 1, 0, 0, 0);
 
     vkCmdEndRenderPass(commandBuffer);
 
@@ -788,7 +816,10 @@ void Application::updateUniformBuffer(uint32_t currentImage) {
     // update the camera
     m_camera->update(time);
 
-    memcpy(uniformBuffersMapped[currentImage], &m_camera->getUbo(), sizeof(m_camera->getUbo()));
+    memcpy(m_descriptorSceneSet->getUniformBuffersMapped(currentImage), &m_camera->getUbo(), sizeof(m_camera->getUbo()));
+
+    m_cameraUi->update(time);
+    memcpy(m_descriptorUiSet->getUniformBuffersMapped(currentImage), &m_cameraUi->getUbo(), sizeof(m_camera->getUbo()));
 }
 
 /**********************************************************************/
@@ -1008,14 +1039,21 @@ void Application::initialize() {
     _inputManager = std::make_unique<InputManager>();
     m_scene = std::make_unique<GameScene>();
     _inputManager = std::make_unique<InputManager>();
-    m_geoBuffer = std::make_unique<GeometryBuffer>();
+
+    m_meshBuffer = std::make_unique<MeshBuffer>();
+    m_uiMeshBuffer = std::make_unique<MeshBuffer>();
+
     m_camera = std::make_unique<CameraFPS>();
+    m_cameraUi = std::make_unique<CameraUi>();
     m_renderPass = std::make_unique<RenderPass>();
     m_swapChain = std::make_unique<SwapChain>();
     m_commandManager = std::make_unique<CommandManager>();
     m_texture = std::make_unique<Texture>();
     m_standardPipeline = std::make_unique<StandardGraphicPipeline>();
-    m_descriptorPool = std::make_unique<DescriptorPoolManager>();
+    m_descriptorPool = std::make_unique<DescriptorPool>();
+
+    m_descriptorSceneSet = std::make_unique<StandardDescriptorSet>();
+    m_descriptorUiSet = std::make_unique<StandardDescriptorSet>();
 
     initWindow();
     initVulkan();
