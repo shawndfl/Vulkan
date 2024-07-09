@@ -2,12 +2,12 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <string>
-#include "core/IDisposable.h"
+#include "core/ISystemManager.h"
 
 /**
 * Manages drawing text on the screen
 */
-class FontManager: public IDisposable {
+class FontManager: public ISystemManager {
 public:
 	void initialize();
 	void addText(const std::string& text, int x, int y);

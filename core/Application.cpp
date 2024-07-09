@@ -141,6 +141,14 @@ VkRenderPass Application::getRenderPass() const {
     return m_renderPass->getRenderPass();
 }
 
+VkFramebuffer Application::getFrameBuffer(int index) const {
+    return m_swapChain->getFrameBuffer(index);
+}
+
+VkExtent2D Application::getExtend2D() const {
+    return m_swapChain->getExtend2D();
+}
+
 VkPhysicalDevice Application::getPhysicalDevice() const {
     return physicalDevice;
 }
@@ -843,7 +851,7 @@ void Application::drawFrame() {
 
     vkResetFences(device, 1, &inFlightFences[m_currentFrame]);
 
-    m_scene->recordToCommandBuffers(m_currentFrame, imageIndex);
+    //m_scene->recordToCommandBuffers(m_currentFrame, imageIndex);
     vkResetCommandBuffer(m_commandManager->getActiveDrawingCommand(), /*VkCommandBufferResetFlagBits*/ 0);
     recordCommandBuffer(m_commandManager->getActiveDrawingCommand(), imageIndex);
 

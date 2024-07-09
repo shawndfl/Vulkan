@@ -18,7 +18,7 @@ public:
 	*/
 	void updateUniformBuffer(uint32_t currentFrame);
 
-	const std::vector<VkCommandBuffer>& recordToCommandBuffers(uint32_t currentFrame, uint32_t imageIndex);
+	const std::vector<VkCommandBuffer>& recordToCommandBuffers2(uint32_t currentFrame, uint32_t imageIndex);
 
 	/**
 	* This is called before fencing so you can run application side logic but don't update

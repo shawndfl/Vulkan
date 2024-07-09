@@ -4,7 +4,7 @@
 
 
 InputManager::InputManager() {
-	_showingCursor = true;
+	m_showingCursor = true;
 }
 
 /**********************************************************************/
@@ -19,7 +19,7 @@ void InputManager::registerMouseHandler(const std::string& id, std::function<voi
 
 /**********************************************************************/
 void InputManager::cursorShowing(bool show) {
-	_showingCursor = show;
+	m_showingCursor = show;
 	const Application& app = Application::get();
 	glfwSetInputMode(Application::get().getWindow(), GLFW_CURSOR, show ?GLFW_CURSOR_NORMAL: GLFW_CURSOR_DISABLED);
 }
@@ -30,7 +30,7 @@ void InputManager::onKey(GLFWwindow* window, int key, int scancode, int action, 
 
 	// toggle showing and hiding the curso
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-		cursorShowing(!_showingCursor);
+		cursorShowing(!m_showingCursor);
 	}
 
 	for (auto pair : keyHandlers) {
@@ -56,4 +56,8 @@ void InputManager::onMouseButton(GLFWwindow* window, int button, int action, int
 	for (auto pair : mouseHandlers) {
 		pair.second( lastMouseButton, lastmouseAction, lastMouseMods, lastX, lastY);
 	}
+}
+
+void InputManager::dispose() {
+	// NOP
 }

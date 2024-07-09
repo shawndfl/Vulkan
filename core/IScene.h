@@ -23,7 +23,7 @@ public:
 	/**
 	* Record to the command buffers
 	*/
-	virtual const std::vector<VkCommandBuffer>& recordToCommandBuffers(uint32_t currentFrame, uint32_t imageIndex) = 0;
+	virtual const std::vector<VkCommandBuffer>& recordToCommandBuffers2(uint32_t currentFrame, uint32_t imageIndex) = 0;
 
 	/**
 	* This is called before fencing so you can run application side logic but don't update 

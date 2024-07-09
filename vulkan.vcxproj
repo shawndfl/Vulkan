@@ -136,15 +136,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="cameras\CameraUi.cpp" />
+    <ClCompile Include="systems\DescriptorManager.cpp" />
     <ClCompile Include="descriptorSets\DescriptorPool.cpp" />
     <ClCompile Include="geometry\BoxGeo.cpp" />
     <ClCompile Include="cameras\Camera.cpp" />
     <ClCompile Include="cameras\CameraFPS.cpp" />
-    <ClCompile Include="core\CommandManager.cpp" />
-    <ClCompile Include="core\InputManager.cpp" />
+    <ClCompile Include="systems\PipelineManager.cpp" />
+    <ClCompile Include="systems\CommandManager.cpp" />
+    <ClCompile Include="systems\InputManager.cpp" />
     <ClCompile Include="core\MeshBuffer.cpp" />
     <ClCompile Include="core\DeviceImage.cpp" />
     <ClCompile Include="geometry\GeoUtilities.cpp" />
+    <ClCompile Include="systems\RenderPassManager.cpp" />
+    <ClCompile Include="systems\TextureManager.cpp" />
     <ClCompile Include="ui\Label.cpp" />
     <ClCompile Include="meshes\CubeMesh.cpp" />
     <ClCompile Include="meshes\PlanMesh.cpp" />
@@ -152,7 +156,7 @@
     <ClCompile Include="systems\FontManager.cpp" />
     <ClCompile Include="geometry\PlaneGeo.cpp" />
     <ClCompile Include="scenes\GameScene.cpp" />
-    <ClCompile Include="ISystemManager.cpp" />
+    <ClCompile Include="core\ISystemManager.cpp" />
     <ClCompile Include="core\Texture.cpp" />
     <ClCompile Include="renderPasses\RenderPass.cpp" />
     <ClCompile Include="core\SwapChain.cpp" />
@@ -166,20 +170,23 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cameras\CameraUi.h" />
+    <ClInclude Include="systems\DescriptorManager.h" />
     <ClInclude Include="descriptorSets\DescriptorPool.h" />
     <ClInclude Include="descriptorSets\UniformBufferObject.h" />
     <ClInclude Include="geometry\BoxGeo.h" />
     <ClInclude Include="cameras\Camera.h" />
     <ClInclude Include="cameras\CameraFPS.h" />
-    <ClInclude Include="core\CommandManager.h" />
+    <ClInclude Include="systems\PipelineManager.h" />
+    <ClInclude Include="systems\CommandManager.h" />
     <ClInclude Include="core\Application.h" />
     <ClInclude Include="core\IDisposable.h" />
-    <ClInclude Include="core\InputManager.h" />
-    <ClInclude Include="core\IGraphicPipeline.h" />
+    <ClInclude Include="systems\InputManager.h" />
     <ClInclude Include="core\IScene.h" />
     <ClInclude Include="core\MeshBuffer.h" />
     <ClInclude Include="core\DeviceImage.h" />
     <ClInclude Include="geometry\GeoUtilities.h" />
+    <ClInclude Include="systems\RenderPassManager.h" />
+    <ClInclude Include="systems\TextureManager.h" />
     <ClInclude Include="ui\Label.h" />
     <ClInclude Include="meshes\CubeMesh.h" />
     <ClInclude Include="meshes\PlanMesh.h" />
@@ -188,14 +195,13 @@
     <ClInclude Include="geometry\PlaneGeo.h" />
     <ClInclude Include="geometry\VertexTypes.h" />
     <ClInclude Include="scenes\GameScene.h" />
-    <ClInclude Include="ISystemManager.h" />
+    <ClInclude Include="core\ISystemManager.h" />
     <ClInclude Include="core\Texture.h" />
     <ClInclude Include="renderPasses\RenderPass.h" />
     <ClInclude Include="core\SwapChain.h" />
     <ClInclude Include="utilities\Performance.h" />
     <ClInclude Include="pipelines\StandardGraphicPipeline.h" />
     <ClInclude Include="utilities\Assets.h" />
-    <ClInclude Include="core\IVulkanApplication.h" />
     <ClInclude Include="utilities\Log.h" />
   </ItemGroup>
   <ItemGroup>

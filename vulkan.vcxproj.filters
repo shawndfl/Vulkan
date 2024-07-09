@@ -27,10 +27,10 @@
     <ClCompile Include="utilities\Assets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="core\InputManager.cpp">
+    <ClCompile Include="systems\InputManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ISystemManager.cpp">
+    <ClCompile Include="core\ISystemManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pipelines\StandardGraphicPipeline.cpp">
@@ -69,7 +69,7 @@
     <ClCompile Include="core\DeviceImage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="core\CommandManager.cpp">
+    <ClCompile Include="systems\CommandManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="systems\FontManager.cpp">
@@ -99,6 +99,18 @@
     <ClCompile Include="cameras\CameraUi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="systems\RenderPassManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="systems\TextureManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="systems\PipelineManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="systems\DescriptorManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="utilities\Log.h">
@@ -107,22 +119,16 @@
     <ClInclude Include="core\Application.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="core\IVulkanApplication.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="utilities\Assets.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="core\InputManager.h">
+    <ClInclude Include="systems\InputManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ISystemManager.h">
+    <ClInclude Include="core\ISystemManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pipelines\StandardGraphicPipeline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\IGraphicPipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="utilities\Performance.h">
@@ -164,7 +170,7 @@
     <ClInclude Include="core\DeviceImage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="core\CommandManager.h">
+    <ClInclude Include="systems\CommandManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="systems\FontManager.h">
@@ -195,6 +201,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="descriptorSets\UniformBufferObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="systems\RenderPassManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="systems\TextureManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="systems\PipelineManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="systems\DescriptorManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

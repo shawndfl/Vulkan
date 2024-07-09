@@ -9,10 +9,17 @@
 #include "core/IScene.h"
 #include "utilities/Performance.h"
 #include "core/MeshBuffer.h"
-#include "core/InputManager.h"
+#include "systems/CommandManager.h"
+#include "systems/DescriptorManager.h"
+#include "systems/FontManager.h"
+#include "systems/InputManager.h"
+#include "systems/PipelineManager.h"
+#include "systems/RenderPassManager.h"
+#include "systems/TextureManager.h"
+
+
 #include "core/SwapChain.h"
 #include "core/DeviceImage.h"
-#include "core/CommandManager.h"
 #include "renderPasses/RenderPass.h"
 #include "core/Texture.h"
 
@@ -108,6 +115,10 @@ public:
     void endSingleTimeCommands(VkCommandBuffer commandBuffer) const;
 
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) const;
+
+    VkFramebuffer getFrameBuffer(int index) const;
+
+    VkExtent2D getExtend2D() const;
 
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 private:

@@ -1,4 +1,5 @@
 #pragma once
+#include "core/ISystemManager.h"
 
 #include <GLFW/glfw3.h>
 #include <functional>
@@ -10,17 +11,7 @@
 * Manages input routing. Components can register to receive events raised to the
 * InputManager
 */
-class InputManager {
-private:
-	bool _showingCursor;
-	std::map<std::string, std::function<void(int key, int scancode, int action, int mods)>> keyHandlers;
-	std::map<std::string, std::function<void(int button, int action, int mods, int x, int y)>> mouseHandlers;
-	int lastX;
-	int lastY;
-	int lastMouseButton;
-	int lastmouseAction;
-	int lastMouseMods;
-
+class InputManager : public ISystemManager {
 public:
 	InputManager();
 
@@ -35,5 +26,17 @@ public:
 	void onCursorPos(GLFWwindow* window, int xpos, int ypos);
 
 	void onMouseButton(GLFWwindow* window, int button, int action, int mods);
+
+	void dispose();
+private:
+	bool m_showingCursor;
+	std::map<std::string, std::function<void(int key, int scancode, int action, int mods)>> keyHandlers;
+	std::map<std::string, std::function<void(int button, int action, int mods, int x, int y)>> mouseHandlers;
+	int lastX;
+	int lastY;
+	int lastMouseButton;
+	int lastmouseAction;
+	int lastMouseMods;
+
 };
 
