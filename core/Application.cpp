@@ -473,7 +473,6 @@ void Application::createSwapChain() {
     m_swapChain->initialize();
     // initailze the camera now that we know the swapChainExtent
     m_camera->initialize();
-    m_cameraUi->initialize();
 }
 
 void Application::createFrameBuffer() {
@@ -824,10 +823,8 @@ void Application::updateUniformBuffer(uint32_t currentImage) {
     // update the camera
     m_camera->update(time);
 
-    memcpy(m_descriptorSceneSet->getUniformBuffersMapped(currentImage), &m_camera->getUbo(), sizeof(m_camera->getUbo()));
-
-    m_cameraUi->update(time);
-    memcpy(m_descriptorUiSet->getUniformBuffersMapped(currentImage), &m_cameraUi->getUbo(), sizeof(m_camera->getUbo()));
+    memcpy(m_descriptorSceneSet->getUniformBuffersMapped(currentImage), &m_camera->getFPSCamera().getUbo(), sizeof(m_camera->getFPSCamera().getUbo()));
+    memcpy(m_descriptorUiSet->getUniformBuffersMapped(currentImage), &m_camera->getUiCamera().getUbo(), sizeof(m_camera->getUiCamera().getUbo()));
 }
 
 /**********************************************************************/
@@ -1051,8 +1048,8 @@ void Application::initialize() {
     m_meshBuffer = std::make_unique<MeshBuffer>();
     m_uiMeshBuffer = std::make_unique<MeshBuffer>();
 
-    m_camera = std::make_unique<CameraFPS>();
-    m_cameraUi = std::make_unique<CameraUi>();
+    m_camera = std::make_unique<CameraManager>();
+    
     m_renderPass = std::make_unique<RenderPass>();
     m_swapChain = std::make_unique<SwapChain>();
     m_commandManager = std::make_unique<CommandManager>();

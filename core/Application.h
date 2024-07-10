@@ -10,6 +10,7 @@
 #include "utilities/Performance.h"
 #include "core/MeshBuffer.h"
 #include "systems/CommandManager.h"
+#include "systems/CameraManager.h"
 #include "systems/DescriptorManager.h"
 #include "systems/FontManager.h"
 #include "systems/InputManager.h"
@@ -225,8 +226,7 @@ private:
     std::unique_ptr<InputManager> _inputManager;
     std::unique_ptr<MeshBuffer> m_meshBuffer;
     std::unique_ptr<MeshBuffer> m_uiMeshBuffer;
-    std::unique_ptr<CameraFPS> m_camera;
-    std::unique_ptr<CameraUi> m_cameraUi;
+    std::unique_ptr<CameraManager> m_camera;
     std::unique_ptr<RenderPass> m_renderPass;
     std::unique_ptr<SwapChain> m_swapChain;
     std::unique_ptr<IScene> m_scene;

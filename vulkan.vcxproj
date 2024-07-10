@@ -135,6 +135,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="core\Buffer.cpp" />
+    <ClCompile Include="systems\CameraManager.cpp" />
     <ClCompile Include="cameras\CameraUi.cpp" />
     <ClCompile Include="systems\DescriptorManager.cpp" />
     <ClCompile Include="descriptorSets\DescriptorPool.cpp" />
@@ -169,6 +171,8 @@
     <ClCompile Include="VulkanSmple.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="core\Buffer.h" />
+    <ClInclude Include="systems\CameraManager.h" />
     <ClInclude Include="cameras\CameraUi.h" />
     <ClInclude Include="systems\DescriptorManager.h" />
     <ClInclude Include="descriptorSets\DescriptorPool.h" />
