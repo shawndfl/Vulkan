@@ -11,8 +11,7 @@ void StandardDescriptorSet::dispose() {
     auto device = app.getDevice();
 
     for (size_t i = 0; i < app.maxFramesInFlight(); i++) {
-        vkDestroyBuffer(device, m_uniformBuffers[i], nullptr);
-        vkFreeMemory(device, m_uniformBuffersMemory[i], nullptr);
+        m_uniformBuffers[i].dispose();
     }
 }
 
@@ -24,13 +23,13 @@ void StandardDescriptorSet::createUniformBuffers() {
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
     m_uniformBuffers.resize(app.maxFramesInFlight());
-    m_uniformBuffersMemory.resize(app.maxFramesInFlight());
-    m_uniformBuffersMapped.resize(app.maxFramesInFlight());
 
     for (size_t i = 0; i < app.maxFramesInFlight(); i++) {
-        app.createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_uniformBuffers[i], m_uniformBuffersMemory[i]);
+        m_uniformBuffers[i].createBuffer(bufferSize,
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-        vkMapMemory(device, m_uniformBuffersMemory[i], 0, bufferSize, 0, &m_uniformBuffersMapped[i]);
+        m_uniformBuffers[i].mapBuffer();
     }
 }
 
@@ -53,7 +52,7 @@ void StandardDescriptorSet::createDescriptorSets(const DescriptorPool& pool, con
 
     for (size_t i = 0; i < app.maxFramesInFlight(); i++) {
         VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = m_uniformBuffers[i];
+        bufferInfo.buffer = m_uniformBuffers[i].getVkBuffer();
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(UniformBufferObject);
 
@@ -85,8 +84,8 @@ void StandardDescriptorSet::createDescriptorSets(const DescriptorPool& pool, con
 }
 
 /**********************************************************************/
-void* StandardDescriptorSet::getUniformBuffersMapped(uint32_t index) const {
-    return m_uniformBuffersMapped[index];
+void StandardDescriptorSet::setData(uint32_t index, const void* src) {
+    m_uniformBuffers[index].copyHostToBuffer(src);
 }
 
 /**********************************************************************/

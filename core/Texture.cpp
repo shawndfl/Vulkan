@@ -19,18 +19,12 @@ void Texture::initialize(const std::string& filename) {
     }
 
     // create staging buffer to the image
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    app.createBuffer(imageSize, 
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
-        stagingBuffer, 
-        stagingBufferMemory);
+    Buffer staging;
+    staging.createBuffer(imageSize,
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-    void* data;
-    vkMapMemory(app.getDevice(), stagingBufferMemory, 0, imageSize, 0, &data);
-    memcpy(data, pixels, static_cast<size_t>(imageSize));
-    vkUnmapMemory(app.getDevice(), stagingBufferMemory);
+    staging.copyHostToBufferOnce(pixels);
 
     // free the image from host memory
     stbi_image_free(pixels);
@@ -78,12 +72,9 @@ void Texture::initialize(const std::string& filename) {
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
         mipLevels);
 
-    copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+    copyBufferToImage(staging.getVkBuffer(), textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+
     //transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmaps
-
-    vkDestroyBuffer(app.getDevice(), stagingBuffer, nullptr);
-    vkFreeMemory(app.getDevice(), stagingBufferMemory, nullptr);
-
     generateMipmaps(textureImage, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, mipLevels);
 
     textureImageView = createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, mipLevels);
@@ -298,34 +289,6 @@ void Texture::createTextureSampler() {
     if (vkCreateSampler(app.getDevice(), &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
         LOGE("failed to create texture sampler!");
     }
-}
-
-/**********************************************************************/
-void Texture::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
-    const Application& app = Application::get();
-    VkBufferCreateInfo bufferInfo{};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = size;
-    bufferInfo.usage = usage;
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-    if (vkCreateBuffer(app.getDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-        LOGE("failed to create buffer! size: " << size);
-    }
-
-    VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(app.getDevice(), buffer, &memRequirements);
-
-    VkMemoryAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = app.findMemoryType(memRequirements.memoryTypeBits, properties);
-
-    if (vkAllocateMemory(app.getDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate buffer memory!");
-    }
-
-    vkBindBufferMemory(app.getDevice(), buffer, bufferMemory, 0);
 }
 
 /**********************************************************************/

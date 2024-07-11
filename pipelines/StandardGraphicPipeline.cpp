@@ -166,8 +166,15 @@ void StandardGraphicPipeline::dispose() {
     const Application& app = Application::get();
     auto device = app.getDevice();
 
-    vkDestroyPipeline(device, graphicsPipeline, nullptr);
-    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+    if (graphicsPipeline) {
+        vkDestroyPipeline(device, graphicsPipeline, nullptr);
+    }
+    if (pipelineLayout) {
+        vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+    }
+
+    graphicsPipeline = nullptr;
+    pipelineLayout = nullptr;
 }
 
 /**********************************************************************/

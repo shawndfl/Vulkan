@@ -230,12 +230,10 @@ void Application::cleanup() {
 
     m_standardPipeline->dispose();
 
-    m_standardPipeline->dispose();
     m_renderPass->dispose();
 
     m_descriptorSceneSet->dispose();
-
-    //m_descriptorUiSet->dispose();
+    m_descriptorUiSet->dispose();
 
     m_descriptorPool->dispose();
 
@@ -645,33 +643,6 @@ void Application::createDescriptorSets() {
 }
 
 /**********************************************************************/
-void Application::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
-    VkBufferCreateInfo bufferInfo{};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = size;
-    bufferInfo.usage = usage;
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-    if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create buffer!");
-    }
-
-    VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
-
-    VkMemoryAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
-
-    if (vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate buffer memory!");
-    }
-
-    vkBindBufferMemory(device, buffer, bufferMemory, 0);
-}
-
-/**********************************************************************/
 VkCommandBuffer Application::beginSingleTimeCommands() const {
     return m_commandManager->beginSingleTimeCommands();
 }
@@ -679,17 +650,6 @@ VkCommandBuffer Application::beginSingleTimeCommands() const {
 /**********************************************************************/
 void Application::endSingleTimeCommands(VkCommandBuffer commandBuffer) const {
     m_commandManager->endSingleTimeCommands(commandBuffer);
-}
-
-/**********************************************************************/
-void Application::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
-    VkCommandBuffer commandBuffer = beginSingleTimeCommands();
-
-    VkBufferCopy copyRegion{};
-    copyRegion.size = size;
-    vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-
-    endSingleTimeCommands(commandBuffer);
 }
 
 /**********************************************************************/
@@ -823,8 +783,8 @@ void Application::updateUniformBuffer(uint32_t currentImage) {
     // update the camera
     m_camera->update(time);
 
-    memcpy(m_descriptorSceneSet->getUniformBuffersMapped(currentImage), &m_camera->getFPSCamera().getUbo(), sizeof(m_camera->getFPSCamera().getUbo()));
-    memcpy(m_descriptorUiSet->getUniformBuffersMapped(currentImage), &m_camera->getUiCamera().getUbo(), sizeof(m_camera->getUiCamera().getUbo()));
+    m_descriptorSceneSet->setData(currentImage, &m_camera->getFPSCamera().getUbo());
+    m_descriptorUiSet->setData(currentImage, &m_camera->getUiCamera().getUbo());
 }
 
 /**********************************************************************/
@@ -1097,38 +1057,6 @@ uint16_t  Application::maxFramesInFlight() const {
 /**********************************************************************/
 uint16_t Application::getCurrentFrame() const {
     return m_currentFrame;
-}
-
-/**********************************************************************/
-void Application::createBuffer(VkDeviceSize size, 
-    VkBufferUsageFlags usage, 
-    VkMemoryPropertyFlags properties, 
-    VkBuffer& buffer, 
-    VkDeviceMemory& bufferMemory) const {
-
-    VkBufferCreateInfo bufferInfo{};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = size;
-    bufferInfo.usage = usage;
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-    if (vkCreateBuffer(getDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-        LOGE("failed to create buffer! size: " << size);
-    }
-
-    VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(getDevice(), buffer, &memRequirements);
-
-    VkMemoryAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
-
-    if (vkAllocateMemory(getDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate buffer memory!");
-    }
-
-    vkBindBufferMemory(getDevice(), buffer, bufferMemory, 0);
 }
 
 /**********************************************************************/

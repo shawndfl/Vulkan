@@ -1,19 +1,13 @@
 #pragma once
 #include <vulkan/vulkan.h>
 #include <vector>
+#include "core/Buffer.h"
 
 /**
 * This class manages an index and vertex buffer. Remember to call dispose when you are
 * done with the buffers.
 */
 class MeshBuffer {
-
-private :
-	VkBuffer vertexBuffer;
-	VkDeviceMemory vertexBufferMemory;
-	VkBuffer indexBuffer;
-	VkDeviceMemory indexBufferMemory;
-	uint32_t indexCount;
 
 public:
 	VkBuffer getVertexBuffer() const;
@@ -27,6 +21,14 @@ public:
 private:
 	void createVertexBuffer(const void* vertexData, const int dataSize, size_t elementCount);
 	void createIndexBuffer(const void* indexData, const int dataSize, size_t elementCount);
+
+private:
+private:
+	
+	uint32_t indexCount;
+
+	Buffer m_indexBuffer;
+	Buffer m_vertexBuffer;
 	
 };
 

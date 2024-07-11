@@ -92,15 +92,6 @@ public:
     uint16_t getCurrentFrame() const;
 
 	/**
-	* Creates a buffers used for images, verteices, indices, and other things in video memory
-	*/
-	void createBuffer(VkDeviceSize size, 
-		VkBufferUsageFlags usage, 
-		VkMemoryPropertyFlags properties, 
-		VkBuffer& buffer, 
-		VkDeviceMemory& bufferMemory) const;
-
-	/**
 	* Finds a memory type for a buffer
 	*/
 	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
@@ -121,7 +112,6 @@ public:
 
     VkExtent2D getExtend2D() const;
 
-    void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 private:
     /**
     * Singletop use get()
@@ -181,8 +171,6 @@ private:
     void createDescriptorPool();
 
     void createDescriptorSets();
-
-    void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
     void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 

@@ -19,12 +19,12 @@ void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
 
 /**********************************************************************/
 VkBuffer MeshBuffer::getVertexBuffer() const {
-    return vertexBuffer;
+    return m_vertexBuffer.getVkBuffer();
 }
 
 /**********************************************************************/
 VkBuffer MeshBuffer::getIndexBuffer() const {
-    return indexBuffer;
+    return m_indexBuffer.getVkBuffer();
 }
 
 /**********************************************************************/
@@ -34,59 +34,47 @@ uint32_t MeshBuffer::getIndexCount() const {
 
 /**********************************************************************/
 void MeshBuffer::dispose() {
-    const Application& app = Application::get();
-    vkDestroyBuffer(app.getDevice(), indexBuffer, nullptr);
-    vkFreeMemory(app.getDevice(), indexBufferMemory, nullptr);
-
-    vkDestroyBuffer(app.getDevice(), vertexBuffer, nullptr);
-    vkFreeMemory(app.getDevice(), vertexBufferMemory, nullptr);
+    m_indexBuffer.dispose();
+    m_vertexBuffer.dispose();
 }
 
 /**********************************************************************/
 void MeshBuffer::createVertexBuffer(const void* vertexData, const int dataSize, size_t elementCount) {
-    const Application& app = Application::get();
 
     VkDeviceSize bufferSize = dataSize * elementCount;
 
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    app.createBuffer(bufferSize,
+    Buffer staging;
+    staging.createBuffer(bufferSize, 
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-        stagingBuffer, stagingBufferMemory);
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+    );
 
-    void* data;
-    vkMapMemory(app.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, vertexData, (size_t)bufferSize);
-    vkUnmapMemory(app.getDevice(), stagingBufferMemory);
+    staging.copyHostToBufferOnce(vertexData);
 
-    app.createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+    m_vertexBuffer.createBuffer(bufferSize, 
+        VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-    copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
-
-    vkDestroyBuffer(app.getDevice(), stagingBuffer, nullptr);
-    vkFreeMemory(app.getDevice(), stagingBufferMemory, nullptr);
+    staging.copyToBuffer(m_vertexBuffer.getVkBuffer());
 }
 
 /**********************************************************************/
 void MeshBuffer::createIndexBuffer(const void* indexData, const int dataSize, size_t elementCount) {
-    const Application& app = Application::get();
+    
     VkDeviceSize bufferSize = dataSize * elementCount;
     indexCount = (int)elementCount;
 
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    app.createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+    Buffer staging;
+    staging.createBuffer(bufferSize,
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+    );
 
-    void* data;
-    vkMapMemory(app.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, indexData, (size_t)bufferSize);
-    vkUnmapMemory(app.getDevice(), stagingBufferMemory);
+    staging.copyHostToBufferOnce(indexData);
 
-    app.createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+    m_indexBuffer.createBuffer(bufferSize,
+        VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-    copyBuffer(stagingBuffer, indexBuffer, bufferSize);
-
-    vkDestroyBuffer(app.getDevice(), stagingBuffer, nullptr);
-    vkFreeMemory(app.getDevice(), stagingBufferMemory, nullptr);
+    staging.copyToBuffer(m_indexBuffer.getVkBuffer());
 }
