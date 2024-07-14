@@ -113,6 +113,8 @@ public:
     RenderPassManager& getRenderPassManager();
 
     DescriptorManager& getDescriptorManager();
+
+    CameraManager& getCameraManager();
 private:
     /**
     * Singletop use get()
@@ -211,9 +213,8 @@ private:
     std::unique_ptr<InputManager> _inputManager;
     std::unique_ptr<CommandManager> m_commandManager;
     std::unique_ptr<RenderPassManager> m_renderPassManager;
-    std::unique_ptr<CameraManager> m_camera;
+    std::unique_ptr<CameraManager> m_cameraManager;
     std::unique_ptr<DescriptorManager> m_descriptorManager;
-    //std::unique_ptr<DescriptorPool> m_descriptorPool;
 
     std::unique_ptr<MeshBuffer> m_meshBuffer;
     std::unique_ptr<MeshBuffer> m_uiMeshBuffer;
@@ -221,9 +222,6 @@ private:
     std::unique_ptr<IScene> m_scene;
     std::unique_ptr<Texture> m_texture;
     std::unique_ptr<StandardGraphicPipeline> m_standardPipeline;
-    //std::unique_ptr<StandardDescriptorSet> m_descriptorSceneSet;
-    //std::unique_ptr<StandardDescriptorSet> m_descriptorUiSet;
-
 
     struct Performance _performance;
 

@@ -3,6 +3,8 @@
 #include "utilities/Log.h"
 #include "systems/FontManager.h"
 #include "core/Application.h"
+#include "cameras/CameraFPS.h"
+#include "cameras/CameraUi.h"
 #include<array>
 
 /**********************************************************************/
@@ -20,6 +22,18 @@ void GameScene::initialize() {
 /**********************************************************************/
 void GameScene::updateUniformBuffer(uint32_t currentFrame) {
 
+    Application& app = Application::get();
+  
+    static auto startTime = std::chrono::high_resolution_clock::now();
+
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+    // update the camera
+    app.getCameraManager().getFPSCamera().update(time);
+
+    app.getDescriptorManager().getDescriptorSceneSet().setData(currentFrame, &app.getCameraManager().getFPSCamera().getUbo());
+    app.getDescriptorManager().getDescriptorUiSet().setData(currentFrame, &app.getCameraManager().getUiCamera().getUbo());
 }
 
 /**********************************************************************/

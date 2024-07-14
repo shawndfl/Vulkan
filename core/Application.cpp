@@ -186,7 +186,7 @@ void Application::initWindow() {
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 
-    m_camera->registerForInput();
+    m_cameraManager->registerForInput();
 }
 
 void Application::initVulkan() {
@@ -461,7 +461,7 @@ void Application::createLogicalDevice() {
 void Application::createSwapChain() {
     m_swapChain->initialize();
     // initailze the camera now that we know the swapChainExtent
-    m_camera->initialize();
+    m_cameraManager->initialize();
 }
 
 void Application::createFrameBuffer() {
@@ -760,10 +760,10 @@ void Application::updateUniformBuffer(uint32_t currentImage) {
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
     // update the camera
-    m_camera->update(time);
+    m_cameraManager->update(time);
 
-    m_descriptorManager->getDescriptorSceneSet().setData(currentImage, &m_camera->getFPSCamera().getUbo());
-    m_descriptorManager->getDescriptorUiSet().setData(currentImage, &m_camera->getUiCamera().getUbo());
+    m_descriptorManager->getDescriptorSceneSet().setData(currentImage, &m_cameraManager->getFPSCamera().getUbo());
+    m_descriptorManager->getDescriptorUiSet().setData(currentImage, &m_cameraManager->getUiCamera().getUbo());
 }
 
 /**********************************************************************/
@@ -989,7 +989,7 @@ void Application::initialize() {
     m_meshBuffer = std::make_unique<MeshBuffer>();
     m_uiMeshBuffer = std::make_unique<MeshBuffer>();
 
-    m_camera = std::make_unique<CameraManager>();
+    m_cameraManager = std::make_unique<CameraManager>();
     
     m_swapChain = std::make_unique<SwapChain>();
     m_commandManager = std::make_unique<CommandManager>();
@@ -1039,6 +1039,11 @@ RenderPassManager& Application::getRenderPassManager() {
 /**********************************************************************/
 DescriptorManager& Application::getDescriptorManager() {
     return *m_descriptorManager;
+}
+
+/**********************************************************************/
+CameraManager& Application::getCameraManager() {
+    return *m_cameraManager;
 }
 
 /**********************************************************************/
