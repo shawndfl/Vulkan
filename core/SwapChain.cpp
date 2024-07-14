@@ -247,7 +247,7 @@ void SwapChain::createDepthResources() {
 
 /**********************************************************************/
 void SwapChain::createFramebuffers() {
-    const Application& app = Application::get();
+    Application& app = Application::get();
     swapChainFramebuffers.resize(swapChainImageViews.size());
 
     for (size_t i = 0; i < swapChainImageViews.size(); i++) {
@@ -259,7 +259,7 @@ void SwapChain::createFramebuffers() {
 
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebufferInfo.renderPass = app.getRenderPass();
+        framebufferInfo.renderPass = app.getRenderPassManager().getRenderPass().getVkRenderPass();
         framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
         framebufferInfo.pAttachments = attachments.data();
         framebufferInfo.width = swapChainExtent.width;

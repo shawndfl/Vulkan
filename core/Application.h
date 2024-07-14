@@ -67,8 +67,6 @@ public:
 
 	VkPhysicalDevice getPhysicalDevice() const;
 
-	VkRenderPass getRenderPass() const;
-
 	uint16_t maxFramesInFlight() const;
 
     void dispose();
@@ -112,6 +110,9 @@ public:
 
     VkExtent2D getExtend2D() const;
 
+    RenderPassManager& getRenderPassManager();
+
+    DescriptorManager& getDescriptorManager();
 private:
     /**
     * Singletop use get()
@@ -166,11 +167,7 @@ private:
 
     void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 
-    void createUniformBuffers();
-
     void createDescriptorPool();
-
-    void createDescriptorSets();
 
     void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
@@ -212,18 +209,20 @@ private:
     static Application* m_instance;
 
     std::unique_ptr<InputManager> _inputManager;
+    std::unique_ptr<CommandManager> m_commandManager;
+    std::unique_ptr<RenderPassManager> m_renderPassManager;
+    std::unique_ptr<CameraManager> m_camera;
+    std::unique_ptr<DescriptorManager> m_descriptorManager;
+    //std::unique_ptr<DescriptorPool> m_descriptorPool;
+
     std::unique_ptr<MeshBuffer> m_meshBuffer;
     std::unique_ptr<MeshBuffer> m_uiMeshBuffer;
-    std::unique_ptr<CameraManager> m_camera;
-    std::unique_ptr<RenderPass> m_renderPass;
     std::unique_ptr<SwapChain> m_swapChain;
     std::unique_ptr<IScene> m_scene;
-    std::unique_ptr<CommandManager> m_commandManager;
     std::unique_ptr<Texture> m_texture;
     std::unique_ptr<StandardGraphicPipeline> m_standardPipeline;
-    std::unique_ptr<DescriptorPool> m_descriptorPool;
-    std::unique_ptr<StandardDescriptorSet> m_descriptorSceneSet;
-    std::unique_ptr<StandardDescriptorSet> m_descriptorUiSet;
+    //std::unique_ptr<StandardDescriptorSet> m_descriptorSceneSet;
+    //std::unique_ptr<StandardDescriptorSet> m_descriptorUiSet;
 
 
     struct Performance _performance;

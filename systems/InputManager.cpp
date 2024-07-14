@@ -3,6 +3,7 @@
 #include "core/Application.h"
 
 
+/**********************************************************************/
 InputManager::InputManager() {
 	m_showingCursor = true;
 }

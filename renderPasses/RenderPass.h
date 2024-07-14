@@ -6,7 +6,7 @@ class RenderPass: public IDisposable
 {
 public:
 	void Initialize();
-	VkRenderPass getRenderPass() const;
+	VkRenderPass getVkRenderPass() const;
 
 	void dispose();
 private:

@@ -137,10 +137,6 @@ GLFWwindow* Application::getWindow() const {
     return window;
 }
 
-VkRenderPass Application::getRenderPass() const {
-    return m_renderPass->getRenderPass();
-}
-
 VkFramebuffer Application::getFrameBuffer(int index) const {
     return m_swapChain->getFrameBuffer(index);
 }
@@ -210,9 +206,7 @@ void Application::initVulkan() {
     createTextureImage();
 
     createGeometryBuffer();
-    createUniformBuffers();
     createDescriptorPool();
-    createDescriptorSets();
     createSyncObjects();
 }
 
@@ -230,12 +224,9 @@ void Application::cleanup() {
 
     m_standardPipeline->dispose();
 
-    m_renderPass->dispose();
+    m_renderPassManager->dispose();
 
-    m_descriptorSceneSet->dispose();
-    m_descriptorUiSet->dispose();
-
-    m_descriptorPool->dispose();
+    m_descriptorManager->dispose();
 
     m_texture->dispose();
 
@@ -478,16 +469,16 @@ void Application::createFrameBuffer() {
 }
 
 void Application::createRenderPass() {
-    m_renderPass->Initialize();
+    m_renderPassManager->initialize();
 }
 
 void Application::createDescriptorSetLayout() {
-    m_descriptorPool->createDescriptorSetLayout();
+    m_descriptorManager->createDescriptorSetLayout();
 }
 
 void Application::createGraphicsPipeline() {
     
-    m_standardPipeline->initialize(m_descriptorPool->getDescriptorSetLayoutPtr(), *m_renderPass);
+    m_standardPipeline->initialize(m_descriptorManager->getDescriptorSetLayoutPtr(), m_renderPassManager->getRenderPass());
 }
 
 void Application::createCommandPool() {
@@ -624,22 +615,10 @@ void Application::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t wid
     endSingleTimeCommands(commandBuffer);
 }
 
-
-/**********************************************************************/
-void Application::createUniformBuffers() {
-    m_descriptorSceneSet->createUniformBuffers();
-    m_descriptorUiSet->createUniformBuffers();
-}
-
 /**********************************************************************/
 void Application::createDescriptorPool() {
-    m_descriptorPool->createDescriptorPool();
-}
-
-/**********************************************************************/
-void Application::createDescriptorSets() {
-    m_descriptorSceneSet->createDescriptorSets(*m_descriptorPool, *m_texture);
-    m_descriptorUiSet->createDescriptorSets(*m_descriptorPool, *m_texture);
+    TextureList list = { *m_texture, *m_texture, *m_texture,*m_texture,*m_texture,*m_texture };
+    m_descriptorManager->initialize(list);
 }
 
 /**********************************************************************/
@@ -677,7 +656,7 @@ void Application::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t im
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = m_renderPass->getRenderPass();
+    renderPassInfo.renderPass = m_renderPassManager->getRenderPass().getVkRenderPass();
     renderPassInfo.framebuffer = m_swapChain->getFrameBuffer(imageIndex);
     renderPassInfo.renderArea.offset = { 0, 0 };
     renderPassInfo.renderArea.extent = m_swapChain->getExtend2D();
@@ -721,7 +700,7 @@ void Application::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t im
         m_standardPipeline->getPipelineLayout(), 
         0, 
         1, 
-        m_descriptorSceneSet->getDescriptorSet(m_currentFrame),
+        m_descriptorManager->getDescriptorSceneSet().getDescriptorSet(m_currentFrame),
         0,
         nullptr);
     vkCmdDrawIndexed(commandBuffer, m_meshBuffer->getIndexCount(), 1, 0, 0, 0);
@@ -739,7 +718,7 @@ void Application::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t im
         m_standardPipeline->getPipelineLayout(),
         0,
         1,
-        m_descriptorUiSet->getDescriptorSet(m_currentFrame),
+        m_descriptorManager->getDescriptorUiSet().getDescriptorSet(m_currentFrame),
         0,
         nullptr);
     vkCmdDrawIndexed(commandBuffer, m_uiMeshBuffer->getIndexCount(), 1, 0, 0, 0);
@@ -783,8 +762,8 @@ void Application::updateUniformBuffer(uint32_t currentImage) {
     // update the camera
     m_camera->update(time);
 
-    m_descriptorSceneSet->setData(currentImage, &m_camera->getFPSCamera().getUbo());
-    m_descriptorUiSet->setData(currentImage, &m_camera->getUiCamera().getUbo());
+    m_descriptorManager->getDescriptorSceneSet().setData(currentImage, &m_camera->getFPSCamera().getUbo());
+    m_descriptorManager->getDescriptorUiSet().setData(currentImage, &m_camera->getUiCamera().getUbo());
 }
 
 /**********************************************************************/
@@ -1004,21 +983,19 @@ void Application::initialize() {
     _inputManager = std::make_unique<InputManager>();
     m_scene = std::make_unique<GameScene>();
     _inputManager = std::make_unique<InputManager>();
+    m_renderPassManager = std::make_unique<RenderPassManager>();
+    m_descriptorManager = std::make_unique<DescriptorManager>();
 
     m_meshBuffer = std::make_unique<MeshBuffer>();
     m_uiMeshBuffer = std::make_unique<MeshBuffer>();
 
     m_camera = std::make_unique<CameraManager>();
     
-    m_renderPass = std::make_unique<RenderPass>();
     m_swapChain = std::make_unique<SwapChain>();
     m_commandManager = std::make_unique<CommandManager>();
     m_texture = std::make_unique<Texture>();
     m_standardPipeline = std::make_unique<StandardGraphicPipeline>();
-    m_descriptorPool = std::make_unique<DescriptorPool>();
-
-    m_descriptorSceneSet = std::make_unique<StandardDescriptorSet>();
-    m_descriptorUiSet = std::make_unique<StandardDescriptorSet>();
+ 
 
     initWindow();
     initVulkan();
@@ -1052,6 +1029,16 @@ std::unique_ptr<InputManager>& Application::getInputManager()  {
 /**********************************************************************/
 uint16_t  Application::maxFramesInFlight() const {
     return MAX_FRAMES_IN_FLIGHT;
+}
+
+/**********************************************************************/
+RenderPassManager& Application::getRenderPassManager() {
+    return *m_renderPassManager;
+}
+
+/**********************************************************************/
+DescriptorManager& Application::getDescriptorManager() {
+    return *m_descriptorManager;
 }
 
 /**********************************************************************/

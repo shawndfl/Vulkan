@@ -80,7 +80,7 @@ void RenderPass::Initialize() {
 }
 
 /**********************************************************************/
-VkRenderPass RenderPass::getRenderPass() const {
+VkRenderPass RenderPass::getVkRenderPass() const {
     return m_renderPass;
 }
 

@@ -4,7 +4,14 @@
 
 class RenderPassManager: public ISystemManager {
 public:
+	RenderPassManager();
+
+	void initialize();
+
+	RenderPass& getRenderPass();
 
 	void dispose();
+private:
+	std::unique_ptr<RenderPass> m_renderPass;
 };
 

@@ -139,7 +139,7 @@ void StandardGraphicPipeline::initialize( VkDescriptorSetLayout* descriptorSetLa
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
     pipelineInfo.layout = pipelineLayout;
-    pipelineInfo.renderPass = renderPass.getRenderPass();
+    pipelineInfo.renderPass = renderPass.getVkRenderPass();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
